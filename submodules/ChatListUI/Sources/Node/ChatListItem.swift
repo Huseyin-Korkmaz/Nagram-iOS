@@ -4754,13 +4754,16 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     
                     if let (actionButtonTitleNodeLayout, apply) = actionButtonTitleNodeLayoutAndApply {
                         let actionButtonSideInset = floor(item.presentationData.fontSize.itemListBaseFontSize * 12.0 / 17.0)
-                        let actionButtonTopInset = floor(item.presentationData.fontSize.itemListBaseFontSize * 5.0 / 17.0)
-                        let actionButtonBottomInset = floor(item.presentationData.fontSize.itemListBaseFontSize * 4.0 / 17.0)
+                        let actionButtonTopInset = floor(item.presentationData.fontSize.itemListBaseFontSize * (nagramCompactChatList ? 2.0 : 5.0) / 17.0) // MARK: NAGRAM
+                        let actionButtonBottomInset = floor(item.presentationData.fontSize.itemListBaseFontSize * (nagramCompactChatList ? 2.0 : 4.0) / 17.0) // MARK: NAGRAM
                         
                         let actionButtonSize = CGSize(width: actionButtonTitleNodeLayout.size.width + actionButtonSideInset * 2.0, height: actionButtonTitleNodeLayout.size.height + actionButtonTopInset + actionButtonBottomInset)
                         var actionButtonFrame = CGRect(x: nextBadgeX - actionButtonSize.width, y: contentRect.minY + floor((contentRect.height - actionButtonSize.height) * 0.5), width: actionButtonSize.width, height: actionButtonSize.height)
                         actionButtonFrame.origin.y = max(actionButtonFrame.origin.y, dateFrame.maxY + floor(item.presentationData.fontSize.itemListBaseFontSize * 4.0 / 17.0))
                         actionButtonFrame.origin.y += 4.0
+                        if nagramCompactChatList { // MARK: NAGRAM — Keep the Mini App button inside the compact row.
+                            actionButtonFrame.origin.y = rightAccessoryY(actionButtonSize.height)
+                        }
                         
                         let actionButtonNode: HighlightableButtonNode
                         var animateActionButtonIn = false

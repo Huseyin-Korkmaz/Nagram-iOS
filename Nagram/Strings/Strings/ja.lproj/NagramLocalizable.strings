@@ -366,3 +366,20 @@
 "Nagram.Share.ReadTimeout" = "スクリーンショットまたはファイルの共有元が 30 秒以内に応答しませんでした。まだ送信されていません。再試行するか、写真に保存してから共有してください。";
 "Nagram.Share.FileTooBig" = "ファイルが大きすぎるため共有できません。小さいファイルを選択して再試行してください。";
 "Nagram.Share.SendFailed" = "共有を完了できませんでした。重複送信を避けるため、再試行する前に送信先のチャットを確認してください。";
+
+// Media information
+"Nagram.MediaMetadata.ViewInfo" = "情報を見る";
+"Nagram.MediaMetadata.Title" = "メディア情報";
+"Nagram.MediaMetadata.Resolution" = "解像度";
+"Nagram.MediaMetadata.FileSize" = "ファイルサイズ";
+"Nagram.MediaMetadata.Type" = "種類";
+"Nagram.MediaMetadata.Image" = "画像";
+"Nagram.MediaMetadata.Video" = "動画";
+"Nagram.MediaMetadata.Audio" = "音声";
+"Nagram.MediaMetadata.Animation" = "アニメーション";
+"Nagram.MediaMetadata.File" = "ファイル";
+"Nagram.MediaMetadata.Duration" = "再生時間";
+"Nagram.MediaMetadata.FrameRate" = "フレームレート";
+"Nagram.MediaMetadata.Bitrate" = "ビットレート";
+"Nagram.MediaMetadata.Codec" = "コーデック";
+"Nagram.MediaMetadata.Unknown" = "不明";

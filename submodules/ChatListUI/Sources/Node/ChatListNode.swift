@@ -3740,7 +3740,7 @@ public final class ChatListNode: ListViewImpl {
             return false
         }
         switch self.visibleContentOffset() {
-        case let .known(value) where abs(value) < self.navigationScrollHeightTopInset - 1.0:
+        case let .known(value) where value < self.navigationScrollHeightTopInset - 1.0: // MARK: NAGRAM — Expanded stories keep navigation visible.
             return false
         case .none:
             return false
@@ -3775,7 +3775,7 @@ public final class ChatListNode: ListViewImpl {
         }
         var scrollToItem: ListViewScrollToItem?
         switch self.visibleContentOffset() {
-        case let .known(value) where abs(value) < self.navigationScrollHeightTopInset - 1.0:
+        case let .known(value) where value < self.navigationScrollHeightTopInset - 1.0: // MARK: NAGRAM
             if isNavigationHidden {
                 scrollToItem = ListViewScrollToItem(index: 0, position: .top(-self.navigationScrollHeightTopInset), animated: false, curve: .Default(duration: 0.0), directionHint: .Up)
             }
