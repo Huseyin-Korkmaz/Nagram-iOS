@@ -2,6 +2,7 @@ import Foundation
 import NagramSettings // MARK: NAGRAM — 可在本机禁用 Community 会话聚合
 import Postbox
 import SwiftSignalKit
+import TelegramApi // MARK: NAGRAM — 恢复隐藏会话时查询服务端的文件夹归属。
 
 public struct CommunityChatListItemSummary: Equatable {
     public let topMessage: EngineMessage?
@@ -248,26 +249,32 @@ func managedCommunityChatListItemSummaries(postbox: Postbox, network: Network, a
         if states.isEmpty {
             return .complete()
         }
-        return postbox.transaction { transaction -> Void in
+        // MARK: NAGRAM — 保留已有存档/置顶归属，隐藏会话从服务端恢复，不能默认移到主列表。
+        return postbox.transaction { transaction -> [Api.InputPeer] in
+            var peersToRestore: [PeerId: Api.InputPeer] = [:]
             for (peerId, state) in states {
                 updateCommunityChatListInclusion(transaction: transaction, communityId: peerId, collapsedInDialogs: state.collapsedInDialogs, minTimestamp: state.timestamp)
                 if let cachedData = transaction.getPeerCachedData(peerId: peerId) as? CachedCommunityData {
                     for linkedPeer in cachedData.linkedPeers {
                         if state.collapsedInDialogs {
                             transaction.updatePeerChatListInclusion(linkedPeer.peerId, inclusion: .notIncluded)
-                        } else if isPeerHiddenByCollapsedCommunity(transaction: transaction, peerId: linkedPeer.peerId) {
+                        } else if shouldExcludePeerFromChatList(transaction: transaction, peerId: linkedPeer.peerId) {
                             transaction.updatePeerChatListInclusion(linkedPeer.peerId, inclusion: .notIncluded)
-                        } else if let peer = transaction.getPeer(linkedPeer.peerId) {
-                            transaction.updatePeerChatListInclusion(linkedPeer.peerId, inclusion: .ifHasMessagesOrOneOf(
-                                groupId: .root,
-                                pinningIndex: transaction.getPeerChatListIndex(linkedPeer.peerId)?.1.pinningIndex,
-                                minTimestamp: minTimestampForPeerInclusion(peer)
-                            ))
+                        } else if transaction.getPeerChatListInclusion(linkedPeer.peerId) == .notIncluded,
+                                  let peer = transaction.getPeer(linkedPeer.peerId),
+                                  let inputPeer = apiInputPeer(peer) {
+                            peersToRestore[linkedPeer.peerId] = inputPeer
                         }
                     }
                 }
             }
+            return Array(peersToRestore.values)
         }
-        |> ignoreValues
+        |> mapToSignal { peersToRestore -> Signal<Never, NoError> in
+            if peersToRestore.isEmpty {
+                return .complete()
+            }
+            return loadAndStorePeerChatInfos(accountPeerId: accountPeerId, postbox: postbox, network: network, peers: peersToRestore)
+        }
     }
 }
