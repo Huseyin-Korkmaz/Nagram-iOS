@@ -105,6 +105,10 @@
 "Nagram.ChatListMessagePreviewStyle.two" = "2行";
 "Nagram.HideSavedAndArchivedMessagesInList" = "リストで保存済みとアーカイブ済みのチャット情報を隠す";
 "Nagram.DisableCommunityChatGrouping" = "コミュニティチャットのグループ表示を無効化";
+"Nagram.CommunityAvatarTapAction" = "コミュニティのアバターをタップしたとき";
+"Nagram.CommunityAvatarTapAction.chat" = "常にチャットを開く";
+"Nagram.CommunityAvatarTapAction.community" = "常にコミュニティを開く";
+"Nagram.CommunityAvatarTapAction.arrow" = "右下の矢印をタップした場合のみコミュニティを開く";
 "Nagram.MessagePlaceholderInSaved" = "ここは保存済みメッセージのチャットです";
 "Nagram.MessagePlaceholderInArchived" = "ここはアーカイブ済みのチャットです";
 "Nagram.ChatListCompact" = "コンパクトなチャットレイアウト";
@@ -300,6 +304,10 @@
 "Nagram.Section.Interface" = "インターフェース";
 "Nagram.HideTabBarPermissionWarnings" = "タブバーの権限警告を非表示";
 "Nagram.HideStories" = "ストーリーズを非表示";
+"Nagram.Section.Stories" = "ストーリーズ";
+"Nagram.HideTopStories" = "上部のストーリーズを非表示";
+"Nagram.DisableStoryCameraSwipe" = "スワイプでのストーリー撮影を無効化";
+"Nagram.DisableChatAvatarStories" = "チャットのアバターのストーリーズを無効化";
 "Nagram.ControlHighlight" = "コントロールのハイライト";
 "Nagram.GlassTransparency" = "Liquid Glass";
 "Nagram.GlassTransparency.system" = "システムに従う";

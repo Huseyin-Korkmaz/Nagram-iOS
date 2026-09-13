@@ -105,6 +105,10 @@
 "Nagram.ChatListMessagePreviewStyle.two" = "兩行";
 "Nagram.HideSavedAndArchivedMessagesInList" = "在列表中隱藏收藏夾和歸檔會話資訊";
 "Nagram.DisableCommunityChatGrouping" = "停用社群聊天合併顯示";
+"Nagram.CommunityAvatarTapAction" = "點擊社群頭像行為";
+"Nagram.CommunityAvatarTapAction.chat" = "一律進入聊天";
+"Nagram.CommunityAvatarTapAction.community" = "一律開啟社群";
+"Nagram.CommunityAvatarTapAction.arrow" = "僅點擊頭像右下角箭頭時開啟社群頁面";
 "Nagram.MessagePlaceholderInSaved" = "這裡是您的收藏夾會話";
 "Nagram.MessagePlaceholderInArchived" = "這裡是您的歸檔會話";
 "Nagram.ChatListCompact" = "緊湊會話佈局";
@@ -300,6 +304,10 @@
 "Nagram.Section.Interface" = "介面";
 "Nagram.HideTabBarPermissionWarnings" = "隱藏標籤列權限警告";
 "Nagram.HideStories" = "隱藏動態";
+"Nagram.Section.Stories" = "動態";
+"Nagram.HideTopStories" = "隱藏頂部動態區域";
+"Nagram.DisableStoryCameraSwipe" = "關閉滑動錄製動態";
+"Nagram.DisableChatAvatarStories" = "關閉聊天頭像動態";
 "Nagram.ControlHighlight" = "控件高亮";
 "Nagram.GlassTransparency" = "Liquid Glass";
 "Nagram.GlassTransparency.system" = "跟隨系統";
