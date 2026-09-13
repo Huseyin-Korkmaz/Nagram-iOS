@@ -137,7 +137,7 @@ public func nagramSavedAccountsController(sharedContext: SharedAccountContext, p
         }
         presentControllerImpl?(textAlertController(sharedContext: sharedContext, title: record.displayName, text: ngI18n("Nagram.SavedAccounts.Confirm", language), actions: [
             TextAlertAction(type: .genericAction, title: presentationData.strings.Common_Cancel, action: {}),
-            TextAlertAction(type: .defaultAction, title: ngI18n("Nagram.SessionBackup.Restore", language), action: {
+            TextAlertAction(type: .defaultAction, title: ngI18n("Nagram.SessionBackup.Import.Confirm", language), action: {
                 isWorking = true
                 statusText = ngI18n("Nagram.SessionBackup.Import.Progress.Adding", language)
                 bump()

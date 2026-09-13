@@ -240,3 +240,51 @@ extension PyrogramSessionStringTests {
     // Shared valid session string for envelope tests.
     static let mithkaSampleSessionString = PyrogramSessionStringTests.vectorOneString
 }
+
+final class NagramSessionImportCommitGateTests: XCTestCase {
+    func testCancellationPreventsQueuedAccountCreation() {
+        let gate = NagramSessionImportCommitGate()
+        var records: [Int] = []
+        gate.cancel()
+        let result: Int? = gate.commit {
+            records.append(1)
+            return 1
+        }
+        XCTAssertNil(result)
+        XCTAssertTrue(records.isEmpty)
+    }
+
+    func testCompletedImportCannotBePublishedTwice() {
+        let gate = NagramSessionImportCommitGate()
+        var records: [Int] = []
+        XCTAssertEqual(gate.commit { records.append(1); return 1 }, 1)
+        XCTAssertNil(gate.commit { records.append(2); return 2 })
+        gate.cancel()
+        XCTAssertEqual(records, [1])
+    }
+
+    func testCancellationWaitsForAnAlreadyCommittingImport() {
+        let gate = NagramSessionImportCommitGate()
+        let committing = DispatchSemaphore(value: 0)
+        let finishCommit = DispatchSemaphore(value: 0)
+        let committed = expectation(description: "account committed")
+        let cancelled = expectation(description: "cancellation returned")
+        DispatchQueue.global().async {
+            let result = gate.commit {
+                committing.signal()
+                _ = finishCommit.wait(timeout: .now() + 5)
+                return 42
+            }
+            XCTAssertEqual(result, 42)
+            committed.fulfill()
+        }
+        XCTAssertEqual(committing.wait(timeout: .now() + 5), .success)
+        DispatchQueue.global().async {
+            gate.cancel()
+            cancelled.fulfill()
+        }
+        finishCommit.signal()
+        wait(for: [committed, cancelled], timeout: 5)
+        XCTAssertNil(gate.commit { 43 })
+    }
+}

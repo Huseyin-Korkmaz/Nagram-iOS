@@ -385,26 +385,39 @@ public func nagramSessionBackupController(context: AccountContext) -> ViewContro
         let dismissAction: () -> Void = { [weak actionSheet] in
             actionSheet?.dismissAnimated()
         }
+        var pendingAction: (() -> Void)?
+        actionSheet.dismissed = { cancelled in
+            let action = pendingAction
+            pendingAction = nil
+            guard !cancelled else { return }
+            Queue.mainQueue().async { action?() }
+        }
         actionSheet.setItemGroups([
             ActionSheetItemGroup(items: [
                 ActionSheetTextItem(title: record.displayName),
                 ActionSheetButtonItem(title: ngI18n("Nagram.SessionBackup.Restore", lang), color: .accent, action: {
-                    dismissAction()
                     if isWorking {
+                        dismissAction()
                         return
                     }
-                    isWorking = true
-                    bump()
-                    importDisposable.set((nagramRestoreBackupRecord(sharedContext: context.sharedContext, record: record)
-                    |> deliverOnMainQueue).start(next: { recordId in
-                        isWorking = false
-                        bump()
-                        context.sharedContext.switchToAccount(id: recordId, fromSettingsController: nil, withChatListController: nil)
-                    }, error: { error in
-                        isWorking = false
-                        bump()
-                        presentError(ngI18n("Nagram.SessionBackup.Restore", lang), error)
-                    }))
+                    pendingAction = {
+                        confirm(ngI18n("Nagram.SessionBackup.Restore", lang), ngI18n("Nagram.SessionBackup.Import.Warning", lang), ngI18n("Nagram.SessionBackup.Import.Confirm", lang), {
+                            if isWorking { return }
+                            isWorking = true
+                            bump()
+                            importDisposable.set((nagramRestoreBackupRecord(sharedContext: context.sharedContext, record: record)
+                            |> deliverOnMainQueue).start(next: { recordId in
+                                isWorking = false
+                                bump()
+                                context.sharedContext.switchToAccount(id: recordId, fromSettingsController: nil, withChatListController: nil)
+                            }, error: { error in
+                                isWorking = false
+                                bump()
+                                presentError(ngI18n("Nagram.SessionBackup.Restore", lang), error)
+                            }))
+                        })
+                    }
+                    dismissAction()
                 }),
                 ActionSheetButtonItem(title: ngI18n("Nagram.SessionBackup.CopySessionString", lang), color: .accent, action: {
                     dismissAction()

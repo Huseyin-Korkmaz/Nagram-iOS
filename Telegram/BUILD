@@ -275,7 +275,10 @@ filegroup(
     name = "AppResources",
     srcs = glob([
         "Telegram-iOS/Resources/**/*",
-    ], exclude = ["Telegram-iOS/Resources/**/.*"]),
+    ], exclude = ["Telegram-iOS/Resources/**/.*"]) + [
+        # MARK: NAGRAM — Fixed speech sample for the user-triggered STT API test.
+        "//Nagram/Transcription:TestAudio",
+    ],
 )
 
 filegroup(
@@ -333,20 +336,8 @@ filegroup(
 )
 
 alternate_icon_folders = [
-    # MARK: NAGRAM — expose the Nagram primary icon in the in-app icon picker
+    # MARK: NAGRAM — only ship Nagram alternate app icons.
     "Nagram",
-    "BlackIcon",
-    "BlackClassicIcon",
-    "BlackFilledIcon",
-    "BlueIcon",
-    "BlueClassicIcon",
-    "BlueFilledIcon",
-    "WhiteFilledIcon",
-    "New1",
-    "New2",
-    "Premium",
-    "PremiumBlack",
-    "PremiumTurbo",
 ]
 
 # MARK: NAGRAM — the IPA post-processor selects the matching icon set from the
@@ -1860,7 +1851,8 @@ plist_fragment(
             <string>Telegram iOS Color Theme File</string>
             <key>UTTypeIconFiles</key>
             <array>
-                <string>BlueIcon@3x.png</string>
+                <!-- MARK: NAGRAM -->
+                <string>Nagram@3x.png</string>
             </array>
             <key>UTTypeIdentifier</key>
             <string>org.telegram.Telegram-iOS.theme</string>

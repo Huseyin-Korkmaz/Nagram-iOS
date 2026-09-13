@@ -198,6 +198,9 @@ public final class NagramQrLoginController: ViewController {
     }
 
     private func refreshToken() {
+        guard !self.hasBeenAccepted else {
+            return
+        }
         let account = self.account
         let sharedContext = self.sharedContext
         let tokenSignal = sharedContext.activeAccountContexts
@@ -238,10 +241,17 @@ public final class NagramQrLoginController: ViewController {
                 strongSelf.subscribeToTokenEvents()
                 strongSelf.refreshToken()
             case .loggedIn, .passwordRequested:
+                // A migrated QR login can request the password without first
+                // returning changeAccountAndRetry. Continue on that network.
+                if case let .passwordRequested(account) = result {
+                    strongSelf.account = account
+                    strongSelf.accountUpdated(account)
+                }
                 // Accepted. The sequence controller advances the flow and
                 // dismisses this screen; until it does, say what is happening
                 // rather than disappearing into the intro for several seconds.
                 strongSelf.tokenDisposable.set(nil)
+                strongSelf.tokenEventsDisposable.set(nil)
                 strongSelf.hasBeenAccepted = true
                 let language = strongSelf.presentationData.strings.baseLanguageCode
                 strongSelf.controllerNode.setCompleting(
@@ -252,6 +262,10 @@ public final class NagramQrLoginController: ViewController {
                 if let layout = strongSelf.validLayout {
                     strongSelf.containerLayoutUpdated(layout, transition: .immediate)
                 }
+                // The state transaction may have notified the sequence before
+                // this callback set hasBeenAccepted. Do not wait for another
+                // state update to uncover the password screen.
+                strongSelf.dismiss()
             }
         }, error: { [weak self] _ in
             // A cold start often races the connection (CONNECTION_NOT_INITED).

@@ -1,7 +1,79 @@
 import Foundation
 import MtProtoKit
+import Postbox
 import SwiftSignalKit
 import TelegramApi
+
+// MARK: NAGRAM — Credentials used for verification never enter Postbox or the account manager.
+private final class NagramSessionImportKeychain: NSObject, MTKeychain {
+    private let values = Atomic<[String: Any]>(value: [:])
+
+    func setObject(_ object: Any!, forKey key: String!, group: String!) {
+        let _ = self.values.modify { values in
+            var values = values
+            values[group + ":" + key] = object
+            return values
+        }
+    }
+
+    func dictionary(forKey key: String!, group: String!) -> [AnyHashable: Any]? {
+        return self.values.with { $0[group + ":" + key] as? [AnyHashable: Any] }
+    }
+
+    func number(forKey key: String!, group: String!) -> NSNumber? {
+        return self.values.with { $0[group + ":" + key] as? NSNumber }
+    }
+
+    func removeObject(forKey key: String!, group: String!) {
+        let _ = self.values.modify { values in
+            var values = values
+            values.removeValue(forKey: group + ":" + key)
+            return values
+        }
+    }
+}
+
+// The closure must return a single verification result. Stop the isolated
+// connection before publishing it, so the final account can reuse the key.
+// Cancellation or process termination leaves no account record to recover.
+public func nagramWithSessionImportNetwork<T, E: Error>(accountManager: AccountManager<TelegramAccountManagerTypes>, networkArguments: NetworkInitializationArguments, backupData: AccountBackupData, testingEnvironment: Bool, verify: @escaping (Network) -> Signal<T, E>) -> Signal<T, E> {
+    return accountManager.transaction { transaction -> ProxySettings? in
+        return transaction.getSharedData(SharedDataKeys.proxySettings)?.get(ProxySettings.self)
+    }
+    |> castError(E.self)
+    |> mapToSignal { proxySettings -> Signal<T, E> in
+        let keychain = NagramSessionImportKeychain()
+        keychain.setObject([
+            backupData.masterDatacenterId as NSNumber: MTDatacenterAuthInfo(authKey: backupData.masterDatacenterKey, authKeyId: backupData.masterDatacenterKeyId, validUntilTimestamp: Int32.max, saltSet: [], authKeyAttributes: [:])!
+        ], forKey: "datacenterAuthInfoById", group: "persistent")
+        return initializedNetwork(accountId: generateAccountRecordId(), arguments: networkArguments, supplementary: true, datacenterId: Int(backupData.masterDatacenterId), keychain: keychain, basePath: "", testingEnvironment: testingEnvironment, languageCode: nil, proxySettings: proxySettings, networkSettings: nil, phoneNumber: nil, useRequestTimeoutTimers: true, appConfiguration: .defaultValue, trackNetworkUsage: false)
+        |> castError(E.self)
+        |> mapToSignal { network -> Signal<T, E> in
+            return Signal { subscriber in
+                network.shouldKeepConnection.set(.single(true))
+                let stop = {
+                    network.shouldKeepConnection.set(.single(false))
+                    network.mtProto.stop()
+                    network.context.removeAllAuthTokens()
+                }
+                let disposable = (verify(network) |> take(1)).start(next: { result in
+                    stop()
+                    network.mtProto.messageServiceQueue().dispatch(onQueue: {
+                        subscriber.putNext(result)
+                        subscriber.putCompletion()
+                    })
+                }, error: { error in
+                    stop()
+                    subscriber.putError(error)
+                })
+                return ActionDisposable {
+                    disposable.dispose()
+                    stop()
+                }
+            }
+        }
+    }
+}
 
 // MARK: NAGRAM — Home datacenter discovery for imported sessions.
 //
@@ -119,6 +191,11 @@ public func nagramAuthenticatedUserId(network: Network) -> Signal<NagramAuthenti
             } else if let users = (boxedResponse as? BoxedMessage)?.body as? [Api.User], let apiUser = users.first {
                 switch apiUser {
                 case let .user(userData):
+                    guard (userData.flags & (1 << 14)) == 0 else {
+                        subscriber.putNext(.failure(errorCode: 400, errorDescription: "BOT_SESSION_UNSUPPORTED"))
+                        subscriber.putCompletion()
+                        return
+                    }
                     Logger.shared.log("NagramMigration", "authenticated self user is \(userData.id)")
                     subscriber.putNext(.userId(userData.id))
                 case .userEmpty:

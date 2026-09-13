@@ -23,7 +23,7 @@
 1. **扫码登录** — `NagramQrLoginController`，见下。
 2. **导入会话** — 打开只做导入的精简页面：粘贴会话串，或直接点选钥匙串里已同步过来的备份。
 3. **已保存的账号（N）** — `NagramSavedAccountsController`，列出钥匙串里存在、但本机没登录的账号，
-   点一个直接恢复。N 为该数量，同时以红点角标显示在按钮上；为 0 时这一项和角标都不出现。
+   确认旧客户端已停用后恢复。N 为该数量，同时以红点角标显示在按钮上；为 0 时这一项和角标都不出现。
 
 两个入口共用 `NagramLoginOptionsButton`（含角标与图标），呈现逻辑集中在
 `AuthorizationSequenceController`——只有那里拿得到 `SharedAccountContext`。
@@ -48,8 +48,8 @@
 
 - **令牌请求要自带重试。** 冷启动时首个请求常见 `CONNECTION_NOT_INITED`，没有错误分支的话
   界面就是一个永远不会填充的空白方块。这里每 3 秒重试一次。
-- **确认之后到登录完成之间有空窗。** 手机上点了确认，客户端还要拉账号状态、可能再要两步验证密码，
-  实测能有十秒。用 `hasBeenAccepted` 标记切到"正在登录"文案，不然用户以为扫失败了。
+- **扫码结果可能晚于状态更新到达。** `.passwordRequested` 要接收返回的新 DC 账号；
+  收到结果后立即停止刷新并关闭二维码页，不能等待下一次状态通知，否则会遮住两步验证页面。
 
 ## Pyrogram 会话串
 
@@ -118,15 +118,28 @@ Pyrogram 之外的实现（包括 Mithka）可能导出一把非归属 DC 的密
 3. 拿到归属 DC 后等 MtProtoKit 通过 `auth.exportAuthorization` / `importAuthorization`
    把授权搬过去（`MTContext.authTokenForDatacenter`，不是 `authInfoForDatacenter`——
    后者只是新建一把密钥，不会转移授权）。
-4. 超时（30 次 × 1 秒）就丢弃这条记录并明确报错，不留一个连不上的账号。
+4. 迁移超时或失败就返回错误，不创建账号；总验证时限为 120 秒。
 
-`makeCurrent` 必须放在**第二个** `AccountManager` 事务里。和 `createRecord` 挤在同一个事务里，
-登录流程会在迁移完成前就被拆掉，迁移把自己取消掉。
+验证使用 `nagramWithSessionImportNetwork`：密钥仅放在内存中的 `MTKeychain`，不创建
+Postbox、账号目录或 `AccountRecord`，也不启动账号状态管理。先验证 `users.getUsers(self)`
+返回的真实身份，再探测归属 DC。成功后停止验证连接，在一个 `AccountManager` 事务中
+创建正式账号并按需 `setCurrentId` / `removeAuth`。事务同时复查相同环境下的重复账号。
 
-> 已知未覆盖：第 3 步（跨 DC 授权转移真的成功）没有端到端验证过——手上的测试会话串正是
-> 一把非归属 DC 的密钥，而 Telegram 把 `auth.exportAuthorization` 本身也路由到归属 DC，
-> 于是 31 次尝试全部返回 `303 USER_MIGRATE_1`，任何客户端都无法用它自举。失败路径
-> （探针、303 解析、超时丢弃、报错文案）是验证过的。
+取消、超时、身份不符或进程退出不会留下待验证账号。`NagramSessionImportCommitGate`
+将取消与最终事务串行化：取消先发生时，已排队的事务不创建账号；事务已提交时保留完成的账号。
+
+跨 DC 授权转移的成功路径仍需要真实会话做端到端验证，不能仅凭解析测试或构建通过判定成功。
+迁移超时只表示授权未完成，不能据此断言所有请求都返回了 `USER_MIGRATE`。
+
+## 恢复用途与限制
+
+原始会话备份只用于旧客户端已停止使用该密钥的恢复或迁移，恢复后不能再启动旧实例。
+所有导入和恢复入口都会在连接前要求确认这一点；iCloud 只传递备份，不生成独立授权。
+若要继续同时使用两台设备，应通过扫码登录获取独立授权。
+
+Telegram 对并行主会话有服务器授予的数量限制。超过限制会触发 `AUTH_KEY_DUPLICATED`，
+使该授权失效，可能同时影响原设备、恢复设备及持有相同密钥的备份。
+参见 [Telegram 官方错误说明](https://core.telegram.org/api/errors#406-not-acceptable)。
 
 ## 代码位置
 
@@ -144,7 +157,7 @@ Pyrogram 之外的实现（包括 Mithka）可能导出一把非归属 DC 的密
 UI 层单独成模块而不是塞进 `Nagram/SettingsUI`，是为了让 `AuthorizationUI` 依赖它时
 不会把整个设置页（含 FaceScanScreen、SliderComponent 等）拖进登录流程。
 
-上游改动都带 `// MARK: NAGRAM`，集中在 `AuthorizationUI`：`BUILD`（依赖）、
+上游改动都带 `// MARK: NAGRAM`。`TelegramCore/Network.swift` 允许验证连接使用内存钥匙串并禁用流量文件；`AuthorizationUI` 包括：`BUILD`（依赖）、
 `AuthorizationSequenceSplashController.swift` 与 `AuthorizationSequencePhoneEntryController.swift`
 （各挂一个账号按钮，只持有回调），以及 `AuthorizationSequenceController.swift`
 （真正呈现菜单与各个页面，那里才有 `SharedAccountContext`）。

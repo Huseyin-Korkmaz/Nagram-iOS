@@ -2002,6 +2002,12 @@ public final class ChatListNode: ListViewImpl {
         |> map { update, _, _ in
             return update
         }
+        |> mapToSignal { update, filter -> Signal<(ChatListNodeViewUpdate, ChatListFilter?), NoError> in
+            return nagramChatListNodeViewUpdateWithPreviousUnhiddenMessages(account: context.account, update: update)
+            |> map { updatedView in
+                return (updatedView, filter)
+            }
+        }
         
         let previousState = Atomic<ChatListNodeState>(value: self.currentState)
         let previousView = Atomic<ChatListNodeView?>(value: nil)
@@ -3734,7 +3740,7 @@ public final class ChatListNode: ListViewImpl {
             return false
         }
         switch self.visibleContentOffset() {
-        case let .known(value) where abs(value) < self.navigationScrollHeightTopInset - 1.0:
+        case let .known(value) where value < self.navigationScrollHeightTopInset - 1.0: // MARK: NAGRAM — Expanded stories keep navigation visible.
             return false
         case .none:
             return false
@@ -3769,7 +3775,7 @@ public final class ChatListNode: ListViewImpl {
         }
         var scrollToItem: ListViewScrollToItem?
         switch self.visibleContentOffset() {
-        case let .known(value) where abs(value) < self.navigationScrollHeightTopInset - 1.0:
+        case let .known(value) where value < self.navigationScrollHeightTopInset - 1.0: // MARK: NAGRAM
             if isNavigationHidden {
                 scrollToItem = ListViewScrollToItem(index: 0, position: .top(-self.navigationScrollHeightTopInset), animated: false, curve: .Default(duration: 0.0), directionHint: .Up)
             }
