@@ -2087,7 +2087,7 @@ func contextMenuForChatPresentationInterfaceState(chatPresentationInterfaceState
                 // MARK: NAGRAM — 快速保存到 Saved Messages：直接转发到自己的云收藏。
                 if messagesToForward.contains(where: { $0.id.peerId != context.account.peerId || $0.id.namespace == Namespaces.Message.Local }) {
                     actions.append(.saveToSavedMessages, .action(ContextMenuActionItem(text: ngI18n("Nagram.MessageMenu.Item.saveToSavedMessages", context.sharedContext.currentPresentationData.with { $0 }.strings.baseLanguageCode), icon: { theme in
-                        return generateTintedImage(image: UIImage(bundleImageName: "Chat/Context Menu/Archive"), color: theme.actionSheet.primaryTextColor)
+                        return generateTintedImage(image: UIImage(bundleImageName: "Chat/Context Menu/Fave"), color: theme.actionSheet.primaryTextColor)
                     }, action: { _, f in
                         interfaceInteraction.saveMessagesToSavedMessages(messagesToForward)
                         f(.dismissWithoutContent)

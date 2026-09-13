@@ -407,3 +407,20 @@
 "Nagram.Share.ReadTimeout" = "The screenshot or file source did not respond within 30 seconds. Nothing was sent. Try again, or save the screenshot to Photos and share it from there.";
 "Nagram.Share.FileTooBig" = "This file is too large to share. Choose a smaller file and try again.";
 "Nagram.Share.SendFailed" = "Sharing could not be completed. Check the destination chat before trying again to avoid duplicate messages.";
+
+// Media information
+"Nagram.MediaMetadata.ViewInfo" = "View Info";
+"Nagram.MediaMetadata.Title" = "Media Info";
+"Nagram.MediaMetadata.Resolution" = "Resolution";
+"Nagram.MediaMetadata.FileSize" = "File Size";
+"Nagram.MediaMetadata.Type" = "Type";
+"Nagram.MediaMetadata.Image" = "Image";
+"Nagram.MediaMetadata.Video" = "Video";
+"Nagram.MediaMetadata.Audio" = "Audio";
+"Nagram.MediaMetadata.Animation" = "Animation";
+"Nagram.MediaMetadata.File" = "File";
+"Nagram.MediaMetadata.Duration" = "Duration";
+"Nagram.MediaMetadata.FrameRate" = "Frame Rate";
+"Nagram.MediaMetadata.Bitrate" = "Bitrate";
+"Nagram.MediaMetadata.Codec" = "Codec";
+"Nagram.MediaMetadata.Unknown" = "Unknown";

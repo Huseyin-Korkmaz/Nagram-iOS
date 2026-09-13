@@ -407,3 +407,20 @@
 "Nagram.Share.ReadTimeout" = "截图或文件来源在 30 秒内没有响应，尚未发送。请重试，或将截图保存到照片后再分享。";
 "Nagram.Share.FileTooBig" = "文件过大，无法分享。请选择较小的文件后重试。";
 "Nagram.Share.SendFailed" = "分享未能完成。请先检查目标聊天，再决定是否重试，以免重复发送。";
+
+// Media information
+"Nagram.MediaMetadata.ViewInfo" = "查看信息";
+"Nagram.MediaMetadata.Title" = "媒体信息";
+"Nagram.MediaMetadata.Resolution" = "分辨率";
+"Nagram.MediaMetadata.FileSize" = "文件大小";
+"Nagram.MediaMetadata.Type" = "类型";
+"Nagram.MediaMetadata.Image" = "图片";
+"Nagram.MediaMetadata.Video" = "视频";
+"Nagram.MediaMetadata.Audio" = "音频";
+"Nagram.MediaMetadata.Animation" = "动图";
+"Nagram.MediaMetadata.File" = "文件";
+"Nagram.MediaMetadata.Duration" = "时长";
+"Nagram.MediaMetadata.FrameRate" = "帧率";
+"Nagram.MediaMetadata.Bitrate" = "码率";
+"Nagram.MediaMetadata.Codec" = "编码";
+"Nagram.MediaMetadata.Unknown" = "未知";
