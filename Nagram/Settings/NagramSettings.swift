@@ -62,6 +62,12 @@ public enum NagramChatListSwipeAction: String {
     }
 }
 
+public enum NagramCommunityAvatarTapAction: String, CaseIterable {
+    case chat
+    case community
+    case arrow
+}
+
 public enum NagramChatListStartupFolderMode: String {
     case telegramDefault = "telegram"
     case last
@@ -169,6 +175,11 @@ public final class NagramSettings {
             NagramSettingsCloudSync.shared.setEnabled(newValue)
         }
     }
+
+    /// 会话备份是否写入 iCloud 钥匙串。关闭后仅存本机，
+    /// 也不再执行可同步查询（那种查询可能要等 iCloud 钥匙串响应）。
+    @NagramDefault("nagram.sessionBackupICloudSync", true)
+    public var sessionBackupICloudSync: Bool
 
     // MARK: 波次 1 — 解除内容保护（沿用 forceCopy key 以平滑迁移）
     @NagramDefault("nagram.forceCopyEnabled", false)
@@ -355,6 +366,13 @@ public final class NagramSettings {
     /// 禁用 Community 将多个聊天合并为一个列表项（默认关 = 保持 Telegram 原生行为）
     @NagramDefault("nagram.disableCommunityChatGrouping", false)
     public var disableCommunityChatGrouping: Bool
+    @NagramDefault("nagram.communityAvatarTapAction", NagramCommunityAvatarTapAction.community.rawValue)
+    public var communityAvatarTapAction: String
+
+    public var communityAvatarTapActionValue: NagramCommunityAvatarTapAction {
+        return NagramCommunityAvatarTapAction(rawValue: self.communityAvatarTapAction) ?? .community
+    }
+
     /// 对话列表启动分组（"telegram" / "last" / "specific"）
     @NagramDefault("nagram.chatListStartupFolderMode", NagramChatListStartupFolderMode.telegramDefault.rawValue)
     public var chatListStartupFolderMode: String
@@ -488,6 +506,21 @@ public final class NagramSettings {
     /// 隐藏动态（Stories）
     @NagramDefault("nagram.hideStories", false)
     public var hideStories: Bool
+
+    @NagramDefault("nagram.hideTopStories", false)
+    public var hideTopStories: Bool
+    @NagramDefault("nagram.disableStoryCameraSwipe", false)
+    public var disableStoryCameraSwipe: Bool
+    @NagramDefault("nagram.disableChatAvatarStories", false)
+    public var disableChatAvatarStories: Bool
+
+    public var disableStoryCameraSwipeEffective: Bool {
+        return self.hideStories || self.disableStoryCameraSwipe
+    }
+
+    public var disableChatAvatarStoriesEffective: Bool {
+        return self.hideStories || self.disableChatAvatarStories
+    }
     /// 隐藏标签栏上的权限警告
     @NagramDefault("nagram.hideTabBarPermissionWarnings", false)
     public var hideTabBarPermissionWarnings: Bool

@@ -105,6 +105,10 @@
 "Nagram.ChatListMessagePreviewStyle.two" = "两行";
 "Nagram.HideSavedAndArchivedMessagesInList" = "在列表中隐藏收藏夹和归档会话信息";
 "Nagram.DisableCommunityChatGrouping" = "禁用社区会话合并展示";
+"Nagram.CommunityAvatarTapAction" = "点击社区头像行为";
+"Nagram.CommunityAvatarTapAction.chat" = "始终进入聊天";
+"Nagram.CommunityAvatarTapAction.community" = "始终打开社区";
+"Nagram.CommunityAvatarTapAction.arrow" = "仅在点击头像右下角箭头时打开社区页";
 "Nagram.MessagePlaceholderInSaved" = "这里是您的收藏夹会话";
 "Nagram.MessagePlaceholderInArchived" = "这里是您的归档会话";
 "Nagram.ChatListCompact" = "紧凑会话布局";
@@ -300,6 +304,10 @@
 "Nagram.Section.Interface" = "界面";
 "Nagram.HideTabBarPermissionWarnings" = "隐藏标签栏权限警告";
 "Nagram.HideStories" = "隐藏动态";
+"Nagram.Section.Stories" = "动态";
+"Nagram.HideTopStories" = "隐藏顶部动态区域";
+"Nagram.DisableStoryCameraSwipe" = "关闭滑动录制动态";
+"Nagram.DisableChatAvatarStories" = "关闭聊天头像动态";
 "Nagram.ControlHighlight" = "控件高亮";
 "Nagram.GlassTransparency" = "Liquid Glass";
 "Nagram.GlassTransparency.system" = "跟随系统";
@@ -402,8 +410,77 @@
 "Nagram.RecentStickerLimit.150" = "150";
 "Nagram.RecentStickerLimit.200" = "200";
 
+// MARK: NAGRAM — Session backup / restore (Pyrogram session strings)
+"Nagram.SessionBackup" = "会话备份";
+"Nagram.Section.SessionBackup" = "会话备份";
+"Nagram.SessionBackup.Footer" = "把当前账号导出为 Pyrogram 会话串，或用会话串添加账号。会话串与 Mithka 及其他基于 Pyrogram 的工具通用。
+
+开启 iCloud 钥匙串同步后，备份会同步到你的其他设备，并出现在那些设备的登录页。关闭后备份仅保存在本机。";
+"Nagram.SessionBackup.Title" = "会话备份";
+"Nagram.SessionBackup.Current" = "当前账号";
+"Nagram.SessionBackup.Current.Footer" = "会话串可以在不需要登录验证码的情况下完全访问该账号。拿到它的人能读取你的消息并以你的身份操作。仅存本机的备份不会离开这台设备；iCloud 钥匙串备份还会同步到你的其他设备。";
+"Nagram.SessionBackup.CopySessionString" = "复制会话串";
+"Nagram.SessionBackup.CopySessionString.Warning" = "会话串可在无需登录验证码的情况下完全访问该账号。仅在准备粘贴到你信任的软件时才复制。";
+"Nagram.SessionBackup.CopySessionString.Confirm" = "复制";
+"Nagram.SessionBackup.Copied" = "已复制到剪贴板。";
+"Nagram.SessionBackup.BackUpSynced" = "备份到 iCloud 钥匙串";
+"Nagram.SessionBackup.BackUpLocal" = "仅备份到本机";
+"Nagram.SessionBackup.SaveSucceeded" = "会话已备份。";
+"Nagram.SessionBackup.Import" = "导入会话";
+"Nagram.SessionBackup.Import.Placeholder" = "粘贴 Pyrogram 会话串";
+"Nagram.SessionBackup.Import.Paste" = "从剪贴板粘贴";
+"Nagram.SessionBackup.Import.Action" = "用会话串添加账号";
+"Nagram.SessionBackup.Import.Footer" = "仅在旧客户端已停止使用会话后恢复备份。如需两台设备同时登录，请使用扫码登录。";
+"Nagram.SessionBackup.Import.Warning" = "会话备份仅用于恢复或迁移。请先停止旧客户端，并且之后不要再打开旧客户端；同时使用可能使两台设备的会话都失效。如需两台设备同时登录，请使用扫码登录。仅继续恢复你自己的备份。";
+"Nagram.SessionBackup.Import.Confirm" = "旧客户端已停止";
+"Nagram.SessionBackup.Saved" = "已保存的备份";
+"Nagram.SessionBackup.Saved.Empty" = "暂无已保存的备份。";
+"Nagram.SessionBackup.Saved.Footer" = "点按备份可恢复、复制其会话串或删除。";
+"Nagram.SessionBackup.Storage.Synced" = "iCloud 钥匙串";
+"Nagram.SessionBackup.Storage.Local" = "本机";
+"Nagram.SessionBackup.Restore" = "恢复";
+"Nagram.SessionBackup.Delete" = "删除";
+"Nagram.SessionBackup.DeleteAll" = "删除所有备份";
+"Nagram.SessionBackup.DeleteAll.Warning" = "将从钥匙串中删除所有已保存的会话备份。已登录的账号不受影响。";
+"Nagram.SessionBackup.Import.Short" = "导入会话";
+"Nagram.SessionBackup.Saved.RestoreFooter" = "仅在旧客户端已停止使用会话后恢复备份。如需两台设备同时登录，请使用扫码登录。";
+"Nagram.QrLogin.Title" = "扫码登录";
+"Nagram.QrLogin.Text" = "1. 在已登录的设备上打开 Telegram。\n2. 进入 设置 → 设备 → 关联桌面设备。\n3. 用该设备扫描此二维码并确认。";
+"Nagram.LoginOptions.Title" = "其他登录方式";
+"Nagram.QrLogin.Accepted.Title" = "正在登录";
+"Nagram.QrLogin.Accepted.Text" = "二维码已被接受，正在完成登录…";
+"Nagram.SessionBackup.Import.Progress.Adding" = "正在添加账号…";
+"Nagram.SessionBackup.Import.Progress.Checking" = "正在确认该账号所属的数据中心…";
+"Nagram.SessionBackup.Import.Progress.Moving" = "正在迁移账号到数据中心 %@…";
+"Nagram.SavedAccounts.Title" = "已保存的账号";
+"Nagram.SavedAccounts.MenuItem" = "已保存的账号（%@）";
+"Nagram.SavedAccounts.Header" = "恢复账号";
+"Nagram.SavedAccounts.Footer" = "仅在旧客户端已停止使用会话后恢复备份。如需两台设备同时登录，请使用扫码登录。";
+"Nagram.SavedAccounts.Confirm" = "会话备份仅用于恢复或迁移。请先停止旧客户端，并且之后不要再打开旧客户端；同时使用可能使两台设备的会话都失效。如需两台设备同时登录，请使用扫码登录。仅继续恢复你自己的备份。";
+"Nagram.SavedAccounts.Loading" = "正在查找已保存的账号…";
+"Nagram.SavedAccounts.Empty" = "没有可在本机恢复的已保存账号。";
+"Nagram.QrLogin.Retrying" = "无法获取二维码，正在重试…";
+"Nagram.SessionBackup.ICloud" = "通过 iCloud 钥匙串同步备份";
+
 // Screenshot sharing failures
 "Nagram.Share.PreparationFailed" = "无法读取或处理分享的图片或文件，尚未发送。请重试，或将截图保存到照片后再分享。";
 "Nagram.Share.ReadTimeout" = "截图或文件来源在 30 秒内没有响应，尚未发送。请重试，或将截图保存到照片后再分享。";
 "Nagram.Share.FileTooBig" = "文件过大，无法分享。请选择较小的文件后重试。";
 "Nagram.Share.SendFailed" = "分享未能完成。请先检查目标聊天，再决定是否重试，以免重复发送。";
+
+// Media information
+"Nagram.MediaMetadata.ViewInfo" = "查看信息";
+"Nagram.MediaMetadata.Title" = "媒体信息";
+"Nagram.MediaMetadata.Resolution" = "分辨率";
+"Nagram.MediaMetadata.FileSize" = "文件大小";
+"Nagram.MediaMetadata.Type" = "类型";
+"Nagram.MediaMetadata.Image" = "图片";
+"Nagram.MediaMetadata.Video" = "视频";
+"Nagram.MediaMetadata.Audio" = "音频";
+"Nagram.MediaMetadata.Animation" = "动图";
+"Nagram.MediaMetadata.File" = "文件";
+"Nagram.MediaMetadata.Duration" = "时长";
+"Nagram.MediaMetadata.FrameRate" = "帧率";
+"Nagram.MediaMetadata.Bitrate" = "码率";
+"Nagram.MediaMetadata.Codec" = "编码";
+"Nagram.MediaMetadata.Unknown" = "未知";

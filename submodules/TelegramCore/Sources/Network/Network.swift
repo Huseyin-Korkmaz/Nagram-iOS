@@ -465,7 +465,8 @@ public struct NetworkInitializationArguments {
 private let cloudDataContext = Atomic<CloudDataContext?>(value: nil)
 #endif
 
-func initializedNetwork(accountId: AccountRecordId, arguments: NetworkInitializationArguments, supplementary: Bool, datacenterId: Int, keychain: Keychain, basePath: String, testingEnvironment: Bool, languageCode: String?, proxySettings: ProxySettings?, networkSettings: NetworkSettings?, phoneNumber: String?, useRequestTimeoutTimers: Bool, appConfiguration: AppConfiguration) -> Signal<Network, NoError> {
+// MARK: NAGRAM — Import verification can use an in-memory MTKeychain without writing usage files.
+func initializedNetwork(accountId: AccountRecordId, arguments: NetworkInitializationArguments, supplementary: Bool, datacenterId: Int, keychain: MTKeychain, basePath: String, testingEnvironment: Bool, languageCode: String?, proxySettings: ProxySettings?, networkSettings: NetworkSettings?, phoneNumber: String?, useRequestTimeoutTimers: Bool, appConfiguration: AppConfiguration, trackNetworkUsage: Bool = true) -> Signal<Network, NoError> {
     return Signal { subscriber in
         let queue = Queue()
         queue.async {
@@ -622,7 +623,8 @@ func initializedNetwork(accountId: AccountRecordId, arguments: NetworkInitializa
             context.beginExplicitBackupAddressDiscovery()
             #endif*/
             
-            let mtProto = MTProto(context: context, datacenterId: datacenterId, usageCalculationInfo: usageCalculationInfo(basePath: basePath, category: nil), requiredAuthToken: nil, authTokenMasterDatacenterId: 0)!
+            // MARK: NAGRAM — A verification-only network has no account directory.
+            let mtProto = MTProto(context: context, datacenterId: datacenterId, usageCalculationInfo: trackNetworkUsage ? usageCalculationInfo(basePath: basePath, category: nil) : nil, requiredAuthToken: nil, authTokenMasterDatacenterId: 0)!
             mtProto.useTempAuthKeys = context.useTempAuthKeys
             mtProto.checkForProxyConnectionIssues = true
             

@@ -35,6 +35,7 @@ import ComponentFlow
 import ComponentDisplayAdapters
 // MARK: NAGRAM
 import NagramMediaMetadata
+import NagramStrings // MARK: NAGRAM
 import NagramSettings
 import ToastComponent
 import MultilineTextComponent
@@ -3981,7 +3982,7 @@ final class UniversalVideoGalleryItemNode: ZoomableContentGalleryItemNode {
                 if NagramSettings.shared.mediaMetadataEnabled, let nativeContent = item.content as? NativeVideoContent {
                     let mediaReference = nativeContent.fileReference.abstract
                     let context = strongSelf.context
-                    items.append(.action(ContextMenuActionItem(text: "查看信息", icon: { theme in generateTintedImage(image: UIImage(bundleImageName: "Chat/Context Menu/Info"), color: theme.actionSheet.primaryTextColor) }, action: { [weak self] _, f in
+                    items.append(.action(ContextMenuActionItem(text: ngI18n("Nagram.MediaMetadata.ViewInfo", strongSelf.presentationData.strings.baseLanguageCode), icon: { theme in generateTintedImage(image: UIImage(bundleImageName: "Chat/Context Menu/Info"), color: theme.actionSheet.primaryTextColor) }, action: { [weak self] _, f in
                         f(.default)
                         guard let self, let controller = self.galleryController() else {
                             return

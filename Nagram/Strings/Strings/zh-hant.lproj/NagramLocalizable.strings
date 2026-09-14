@@ -105,6 +105,10 @@
 "Nagram.ChatListMessagePreviewStyle.two" = "兩行";
 "Nagram.HideSavedAndArchivedMessagesInList" = "在列表中隱藏收藏夾和歸檔會話資訊";
 "Nagram.DisableCommunityChatGrouping" = "停用社群聊天合併顯示";
+"Nagram.CommunityAvatarTapAction" = "點擊社群頭像行為";
+"Nagram.CommunityAvatarTapAction.chat" = "一律進入聊天";
+"Nagram.CommunityAvatarTapAction.community" = "一律開啟社群";
+"Nagram.CommunityAvatarTapAction.arrow" = "僅點擊頭像右下角箭頭時開啟社群頁面";
 "Nagram.MessagePlaceholderInSaved" = "這裡是您的收藏夾會話";
 "Nagram.MessagePlaceholderInArchived" = "這裡是您的歸檔會話";
 "Nagram.ChatListCompact" = "緊湊會話佈局";
@@ -300,6 +304,10 @@
 "Nagram.Section.Interface" = "介面";
 "Nagram.HideTabBarPermissionWarnings" = "隱藏標籤列權限警告";
 "Nagram.HideStories" = "隱藏動態";
+"Nagram.Section.Stories" = "動態";
+"Nagram.HideTopStories" = "隱藏頂部動態區域";
+"Nagram.DisableStoryCameraSwipe" = "關閉滑動錄製動態";
+"Nagram.DisableChatAvatarStories" = "關閉聊天頭像動態";
 "Nagram.ControlHighlight" = "控件高亮";
 "Nagram.GlassTransparency" = "Liquid Glass";
 "Nagram.GlassTransparency.system" = "跟隨系統";
@@ -402,8 +410,77 @@
 "Nagram.RecentStickerLimit.150" = "150";
 "Nagram.RecentStickerLimit.200" = "200";
 
+// MARK: NAGRAM — Session backup / restore (Pyrogram session strings)
+"Nagram.SessionBackup" = "工作階段備份";
+"Nagram.Section.SessionBackup" = "工作階段備份";
+"Nagram.SessionBackup.Footer" = "把目前帳號匯出為 Pyrogram 工作階段字串，或用字串新增帳號。字串與 Mithka 及其他基於 Pyrogram 的工具通用。
+
+開啟 iCloud 鑰匙圈同步後，備份會同步到你的其他裝置，並出現在那些裝置的登入頁。關閉後備份僅保存在本機。";
+"Nagram.SessionBackup.Title" = "工作階段備份";
+"Nagram.SessionBackup.Current" = "目前帳號";
+"Nagram.SessionBackup.Current.Footer" = "工作階段字串可在不需登入驗證碼的情況下完全存取此帳號。取得它的人能讀取你的訊息並以你的身分操作。僅存本機的備份不會離開這台裝置；iCloud 鑰匙圈備份還會同步到你的其他裝置。";
+"Nagram.SessionBackup.CopySessionString" = "複製工作階段字串";
+"Nagram.SessionBackup.CopySessionString.Warning" = "工作階段字串可在無需登入驗證碼的情況下完全存取此帳號。僅在準備貼到你信任的軟體時才複製。";
+"Nagram.SessionBackup.CopySessionString.Confirm" = "複製";
+"Nagram.SessionBackup.Copied" = "已複製到剪貼板。";
+"Nagram.SessionBackup.BackUpSynced" = "備份到 iCloud 鑰匙圈";
+"Nagram.SessionBackup.BackUpLocal" = "僅備份到本機";
+"Nagram.SessionBackup.SaveSucceeded" = "工作階段已備份。";
+"Nagram.SessionBackup.Import" = "匯入工作階段";
+"Nagram.SessionBackup.Import.Placeholder" = "貼上 Pyrogram 工作階段字串";
+"Nagram.SessionBackup.Import.Paste" = "從剪貼板貼上";
+"Nagram.SessionBackup.Import.Action" = "用工作階段字串新增帳號";
+"Nagram.SessionBackup.Import.Footer" = "僅在舊用戶端已停止使用會話後復原備份。如需兩台裝置同時登入，請使用掃碼登入。";
+"Nagram.SessionBackup.Import.Warning" = "會話備份僅用於復原或移轉。請先停止舊用戶端，並且之後不要再開啟舊用戶端；同時使用可能使兩台裝置的會話都失效。如需兩台裝置同時登入，請使用掃碼登入。僅繼續復原你自己的備份。";
+"Nagram.SessionBackup.Import.Confirm" = "舊用戶端已停止";
+"Nagram.SessionBackup.Saved" = "已儲存的備份";
+"Nagram.SessionBackup.Saved.Empty" = "尚無已儲存的備份。";
+"Nagram.SessionBackup.Saved.Footer" = "點按備份可還原、複製其字串或刪除。";
+"Nagram.SessionBackup.Storage.Synced" = "iCloud 鑰匙圈";
+"Nagram.SessionBackup.Storage.Local" = "本機";
+"Nagram.SessionBackup.Restore" = "還原";
+"Nagram.SessionBackup.Delete" = "刪除";
+"Nagram.SessionBackup.DeleteAll" = "刪除所有備份";
+"Nagram.SessionBackup.DeleteAll.Warning" = "將從鑰匙圈中刪除所有已儲存的工作階段備份。已登入的帳號不受影響。";
+"Nagram.SessionBackup.Import.Short" = "匯入工作階段";
+"Nagram.SessionBackup.Saved.RestoreFooter" = "僅在舊用戶端已停止使用會話後復原備份。如需兩台裝置同時登入，請使用掃碼登入。";
+"Nagram.QrLogin.Title" = "掃碼登入";
+"Nagram.QrLogin.Text" = "1. 在已登入的裝置上開啟 Telegram。\n2. 進入 設定 → 裝置 → 連結桌面裝置。\n3. 用該裝置掃描此二維碼並確認。";
+"Nagram.LoginOptions.Title" = "其他登入方式";
+"Nagram.QrLogin.Accepted.Title" = "正在登入";
+"Nagram.QrLogin.Accepted.Text" = "二維碼已被接受，正在完成登入…";
+"Nagram.SessionBackup.Import.Progress.Adding" = "正在新增帳號…";
+"Nagram.SessionBackup.Import.Progress.Checking" = "正在確認該帳號所屬的資料中心…";
+"Nagram.SessionBackup.Import.Progress.Moving" = "正在遷移帳號到資料中心 %@…";
+"Nagram.SavedAccounts.Title" = "已儲存的帳號";
+"Nagram.SavedAccounts.MenuItem" = "已儲存的帳號（%@）";
+"Nagram.SavedAccounts.Header" = "復原帳號";
+"Nagram.SavedAccounts.Footer" = "僅在舊用戶端已停止使用會話後復原備份。如需兩台裝置同時登入，請使用掃碼登入。";
+"Nagram.SavedAccounts.Confirm" = "會話備份僅用於復原或移轉。請先停止舊用戶端，並且之後不要再開啟舊用戶端；同時使用可能使兩台裝置的會話都失效。如需兩台裝置同時登入，請使用掃碼登入。僅繼續復原你自己的備份。";
+"Nagram.SavedAccounts.Loading" = "正在尋找已儲存的帳號…";
+"Nagram.SavedAccounts.Empty" = "沒有可在本機還原的已儲存帳號。";
+"Nagram.QrLogin.Retrying" = "無法取得二維碼，正在重試…";
+"Nagram.SessionBackup.ICloud" = "透過 iCloud 鑰匙圈同步備份";
+
 // Screenshot sharing failures
 "Nagram.Share.PreparationFailed" = "無法讀取或處理分享的圖片或檔案，尚未傳送。請重試，或將截圖儲存到照片後再分享。";
 "Nagram.Share.ReadTimeout" = "截圖或檔案來源在 30 秒內沒有回應，尚未傳送。請重試，或將截圖儲存到照片後再分享。";
 "Nagram.Share.FileTooBig" = "檔案過大，無法分享。請選擇較小的檔案後重試。";
 "Nagram.Share.SendFailed" = "分享未能完成。請先檢查目標聊天，再決定是否重試，以免重複傳送。";
+
+// Media information
+"Nagram.MediaMetadata.ViewInfo" = "檢視資訊";
+"Nagram.MediaMetadata.Title" = "媒體資訊";
+"Nagram.MediaMetadata.Resolution" = "解析度";
+"Nagram.MediaMetadata.FileSize" = "檔案大小";
+"Nagram.MediaMetadata.Type" = "類型";
+"Nagram.MediaMetadata.Image" = "圖片";
+"Nagram.MediaMetadata.Video" = "影片";
+"Nagram.MediaMetadata.Audio" = "音訊";
+"Nagram.MediaMetadata.Animation" = "動畫";
+"Nagram.MediaMetadata.File" = "檔案";
+"Nagram.MediaMetadata.Duration" = "時長";
+"Nagram.MediaMetadata.FrameRate" = "影格率";
+"Nagram.MediaMetadata.Bitrate" = "位元率";
+"Nagram.MediaMetadata.Codec" = "編碼";
+"Nagram.MediaMetadata.Unknown" = "未知";
