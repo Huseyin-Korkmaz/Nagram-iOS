@@ -44,7 +44,7 @@ swift_library(
     module_name = "TelegramUI",
     srcs = glob([
         "Sources/**/*.swift",
-    ]),
+    ]) + ["//Nagram/AppLifecycle:AppLifecycle"], # MARK: NAGRAM — app scene integration.
     copts = [
         "-warnings-as-errors",
     ],
