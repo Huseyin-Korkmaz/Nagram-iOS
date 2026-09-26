@@ -2569,6 +2569,8 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
     }
     
     private func openUrl(url: URL) {
+        // MARK: NAGRAM
+        let url = nagramCanonicalAppSchemeUrl(url)
         let _ = (self.sharedContextPromise.get()
         |> take(1)
         |> mapToSignal { sharedApplicationContext -> Signal<(SharedAccountContextImpl, AuthorizedApplicationContext?, UnauthorizedApplicationContext?), NoError> in

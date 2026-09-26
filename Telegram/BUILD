@@ -473,6 +473,8 @@ plist_fragment(
             <key>CFBundleURLSchemes</key>
             <array>
                 <string>telegram</string>
+                <!-- MARK: NAGRAM — Nagram-branded alias of telegram://. -->
+                <string>nagram</string>
             </array>
         </dict>
         <dict>
@@ -483,6 +485,8 @@ plist_fragment(
             <key>CFBundleURLSchemes</key>
             <array>
                 <string>tg</string>
+                <!-- MARK: NAGRAM — Nagram-branded alias of tg://. -->
+                <string>na</string>
                 <string>tonsite</string>
             </array>
         </dict>
