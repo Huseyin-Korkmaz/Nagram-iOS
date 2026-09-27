@@ -484,3 +484,15 @@ iCloud Anahtar Zinciri senkronizasyonu açıkken yedekler diğer cihazlarınız�
 "Nagram.MediaMetadata.Bitrate" = "Bit Hızı";
 "Nagram.MediaMetadata.Codec" = "Kodek";
 "Nagram.MediaMetadata.Unknown" = "Bilinmiyor";
+
+"Nagram.InviteLinks.BulkRevoke" = "Davet Bağlantılarını İptal Et…";
+"Nagram.InviteLinks.ScopeInfo" = "Yalnızca ek, kalıcı olmayan davet bağlantıları işlenecektir. Ana bağlantı etkilenmeyecektir.";
+"Nagram.InviteLinks.RevokeAll" = "Tüm Bağlantıları İptal Et";
+"Nagram.InviteLinks.RevokeUnavailable" = "Tüm Kullanılamayan Bağlantıları İptal Et";
+"Nagram.InviteLinks.ConfirmAll" = "Oluşturduğunuz tüm ek davet bağlantıları (toplam %@) iptal edilsin mi? Ana bağlantı ve diğer kalıcı bağlantılar etkilenmeyecektir. Bu işlem geri alınamaz.";
+"Nagram.InviteLinks.ConfirmUnavailable" = "Süresi dolmuş veya kullanım sınırına ulaşmış kullanılamayan ek davet bağlantıları (toplam %@) iptal edilsin mi? Ana bağlantı, diğer kalıcı bağlantılar ve kullanılabilir ek bağlantılar etkilenmeyecektir. Bu işlem geri alınamaz.";
+"Nagram.InviteLinks.NoAdditional" = "İptal edilebilecek ek davet bağlantısı yok.";
+"Nagram.InviteLinks.NoUnavailable" = "Kullanılamayan ek davet bağlantısı yok.";
+"Nagram.InviteLinks.FetchFailed" = "Ek davet bağlantılarının tam listesi yüklenemedi. Lütfen daha sonra tekrar deneyin.";
+"Nagram.InviteLinks.Success" = "İptal edilen ek davet bağlantıları: %@.";
+"Nagram.InviteLinks.PartialFailure" = "İptal edilen: %1$@. Başarısız olan: %2$@. Liste yenileniyor.";
