@@ -1539,9 +1539,10 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         })
         
         if let url = launchOptions?[.url] {
-            if let url = url as? URL, url.scheme == "tg" || url.scheme == buildConfig.appSpecificUrlScheme {
+            // MARK: NAGRAM — accept na:// and nagram:// launch URLs as tg://.
+            if let url = (url as? URL).map(nagramCanonicalAppSchemeUrl), url.scheme == "tg" || url.scheme == buildConfig.appSpecificUrlScheme {
                 self.openUrlWhenReady(url: url, external: true)
-            } else if let urlString = url as? String, urlString.lowercased().hasPrefix("tg:") || urlString.lowercased().hasPrefix("\(buildConfig.appSpecificUrlScheme):"), let url = URL(string: urlString) {
+            } else if let urlString = (url as? String).map(nagramCanonicalAppSchemeUrl), urlString.lowercased().hasPrefix("tg:") || urlString.lowercased().hasPrefix("\(buildConfig.appSpecificUrlScheme):"), let url = URL(string: urlString) {
                 self.openUrlWhenReady(url: url, external: true)
             }
         }
@@ -2547,6 +2548,8 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
     }
     
     private func openUrl(url: URL) {
+        // MARK: NAGRAM
+        let url = nagramCanonicalAppSchemeUrl(url)
         let _ = (self.sharedContextPromise.get()
         |> take(1)
         |> mapToSignal { sharedApplicationContext -> Signal<(SharedAccountContextImpl, AuthorizedApplicationContext?, UnauthorizedApplicationContext?), NoError> in
