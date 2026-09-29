@@ -313,7 +313,10 @@ private func handleInternetUrl(
                     let controller = BrowserScreen(context: context, subject: .webPage(url: parsedUrl.absoluteString))
                     navigationController?.pushViewController(controller)
                 } else {
-                    let openInOptions = availableOpenInOptions(context: context, item: .url(url: originalUrl))
+                    // MARK: NAGRAM — hand external browsers the scheme-normalized URL; a bare
+                    // "example.com" becomes "googlechrome:example.com" / "firefox://open-url?url=example.com".
+                    let targetUrl = parsedUrl.absoluteString
+                    let openInOptions = availableOpenInOptions(context: context, item: .url(url: targetUrl))
                     var defaultWebBrowser = localSettings.defaultWebBrowser
                     if defaultWebBrowser == nil || defaultWebBrowser == "inApp" || defaultWebBrowser == "inAppSafari" {
                         defaultWebBrowser = "safari"
@@ -322,10 +325,10 @@ private func handleInternetUrl(
                         if case let .openUrl(openInUrl) = option.action() {
                             context.sharedContext.applicationBindings.openUrl(openInUrl)
                         } else {
-                            context.sharedContext.applicationBindings.openUrl(originalUrl)
+                            context.sharedContext.applicationBindings.openUrl(targetUrl)
                         }
                     } else {
-                        context.sharedContext.applicationBindings.openUrl(originalUrl)
+                        context.sharedContext.applicationBindings.openUrl(targetUrl)
                     }
                 }
             })
