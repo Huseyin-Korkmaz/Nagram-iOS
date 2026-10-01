@@ -70,12 +70,7 @@ build --//Telegram:disableExtensions
 # 不写 disableProvisioningProfiles
 ```
 
-模拟器免签：
-
-```bazelrc
-build --//Telegram:disableProvisioningProfiles
-build --//Telegram:disableExtensions
-```
+模拟器免签：不改 `local.bazelrc`，给 `Make.py build` 加 `--disableProvisioningProfiles --disableExtensions`（见“模拟器免签”）。
 
 本机常用 toolchain workaround 可按需追加：
 
@@ -325,12 +320,7 @@ xcrun devicectl device install app --device <DEVICE_UDID> /tmp/tg-device/Payload
 
 ## 模拟器免签
 
-模拟器模式可以禁用 provisioning 和扩展：
-
-```bazelrc
-build --//Telegram:disableProvisioningProfiles
-build --//Telegram:disableExtensions
-```
+模拟器模式禁用 provisioning 和扩展，通过 `Make.py build` 的命令行参数开启；不要为此修改 `local.bazelrc`，它保持真机签名模式即可。`--disableProvisioningProfiles` 只接受 `debug_sim_arm64` / `release_sim_arm64`，真机配置会直接报错。
 
 编译：
 
@@ -340,7 +330,8 @@ python3 build-system/Make/Make.py --overrideXcodeVersion \
   build \
   --configurationPath build-system/appstore-configuration.json \
   --xcodeManagedCodesigning --buildNumber=1 \
-  --configuration=debug_sim_arm64 --continueOnError
+  --configuration=debug_sim_arm64 --continueOnError \
+  --disableProvisioningProfiles --disableExtensions
 ```
 
 安装：
@@ -370,7 +361,7 @@ build-input/bazel-8.4.2-darwin-arm64 build Telegram/Telegram \
   --watchos_cpus=arm64_32
 ```
 
-这个 fallback 复用当前 `local.bazelrc`，所以切换正式/免费/模拟器模式时仍要先改对签名 flag。
+这个 fallback 复用当前 `local.bazelrc`，所以切换正式/免费签名模式时仍要先改对签名 flag。模拟器模式不改 `local.bazelrc`，直接在命令行追加 `--//Telegram:disableProvisioningProfiles --//Telegram:disableExtensions`。
 
 ## 2026-06-14 编译问题记录
 
@@ -388,13 +379,9 @@ python3 build-system/Make/Make.py ... build ... --configuration=debug_sim_arm64 
 Make: error: unrecognized arguments: --disableProvisioningProfiles
 ```
 
-结论：`disableProvisioningProfiles` 不是当前 `Make.py` 的直接参数。模拟器免签应放到 `local.bazelrc`：
+当时的结论：`disableProvisioningProfiles` 不是 `Make.py build` 的直接参数，只能写进 `local.bazelrc`。
 
-```bazelrc
-build --//Telegram:disableProvisioningProfiles
-```
-
-真机构建必须注释掉这一行。
+现状：`Make.py build` 已支持 `--disableProvisioningProfiles` 和 `--disableExtensions`，模拟器免签直接加这两个参数，不再修改 `local.bazelrc`。
 
 ### 2. Make.py debug 配置把 Swift 并发参数当成输入文件
 
