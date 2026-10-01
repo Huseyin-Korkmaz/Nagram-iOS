@@ -10,6 +10,7 @@ swift_library(
         "-warnings-as-errors",
     ],
     deps = [
+        "//Nagram/Settings:NagramSettings", # MARK: NAGRAM
         "//submodules/AsyncDisplayKit",
         "//submodules/Postbox",
         "//submodules/SSignalKit/SwiftSignalKit",
