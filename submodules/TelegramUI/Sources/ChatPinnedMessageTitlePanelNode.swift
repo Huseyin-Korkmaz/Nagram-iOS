@@ -24,6 +24,7 @@ import TranslateUI
 import ChatControllerInteraction
 import LegacyChatHeaderPanelComponent
 import UIKitRuntimeUtils
+import NagramSettings // MARK: NAGRAM
 
 private enum PinnedMessageAnimation {
     case slideToTop
@@ -291,7 +292,8 @@ final class ChatPinnedMessageTitlePanelNode: ChatTitleAccessoryPanelNode {
         }
         self.isReplyThread = isReplyThread
         
-        self.captureProtected = interfaceState.copyProtectionEnabled || interfaceState.myCopyProtectionEnabled
+        // MARK: NAGRAM force-copy — 开启后不再因内容保护禁止截图
+        self.captureProtected = (interfaceState.copyProtectionEnabled || interfaceState.myCopyProtectionEnabled) && !NagramSettings.shared.forceCopyEnabled
         
         self.contextContainer.isGestureEnabled = !isReplyThread
         

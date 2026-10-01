@@ -16,6 +16,7 @@ import PeerInfoVisualMediaPaneNode
 import PhotoResources
 import PeerInfoPaneNode
 import WebUI
+import NagramSettings // MARK: NAGRAM
 
 enum PeerInfoUpdatingAvatar {
     case none
@@ -2383,6 +2384,10 @@ func peerInfoScreenData(
 }
 
 func peerInfoIsCopyProtected(data: PeerInfoScreenData) -> Bool {
+    // MARK: NAGRAM force-copy — 开启后不再因内容保护禁止截图
+    if NagramSettings.shared.forceCopyEnabled {
+        return false
+    }
     var isCopyProtected = false
     if let cachedUserData = data.cachedData as? CachedUserData, cachedUserData.flags.contains(.copyProtectionEnabled) || cachedUserData.flags.contains(.myCopyProtectionEnabled) {
         isCopyProtected = true

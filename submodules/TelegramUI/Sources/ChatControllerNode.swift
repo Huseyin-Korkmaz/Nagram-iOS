@@ -1215,7 +1215,8 @@ class ChatControllerNode: ASDisplayNode, ASScrollViewDelegate {
             }
         }
         
-        let isSecret = self.chatPresentationInterfaceState.copyProtectionEnabled || self.chatLocation.peerId?.namespace == Namespaces.Peer.SecretChat || self.chatLocation.peerId?.isVerificationCodes == true
+        // MARK: NAGRAM force-copy — 开启后不再因内容保护禁止截图
+        let isSecret = (self.chatPresentationInterfaceState.copyProtectionEnabled && !NagramSettings.shared.forceCopyEnabled) || self.chatLocation.peerId?.namespace == Namespaces.Peer.SecretChat || self.chatLocation.peerId?.isVerificationCodes == true
         if self.historyNodeContainer.isSecret != isSecret {
             #if DEBUG
             self.historyNodeContainer.isSecret = false

@@ -18,6 +18,7 @@ import ChatMessageItemCommon
 import MessageInlineBlockBackgroundView
 import CheckNode
 import EmojiTextAttachmentView
+import NagramSettings // MARK: NAGRAM
 
 public enum ChatMessageReplyInfoType {
     case bubble(incoming: Bool)
@@ -810,7 +811,7 @@ public class ChatMessageReplyInfoNode: ASDisplayNode {
                     node.imageNode = nil
                 }
                 if let message = arguments.message {
-                    node.imageNode?.captureProtected = arguments.associatedData.isCopyProtectionEnabled || message.isCopyProtected()
+                    node.imageNode?.captureProtected = (arguments.associatedData.isCopyProtectionEnabled || message.isCopyProtected()) && !NagramSettings.shared.forceCopyEnabled // MARK: NAGRAM force-copy
                 }
                 
                 titleNode.frame = CGRect(origin: CGPoint(x: leftInset - textInsets.left - 2.0, y: spacing - textInsets.top + 1.0), size: titleLayout.size)
