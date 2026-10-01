@@ -63,6 +63,9 @@ public final class ChatMessageWebpageBubbleContentNode: ChatMessageBubbleContent
                                 } else if file.isMusic || file.isVoice {
                                     shouldOpenUrl = false
                                 }
+                            } else if content.image != nil, item.message.adAttribute == nil {
+                                // MARK: NAGRAM tapping a link preview image opens the image
+                                shouldOpenUrl = false
                             }
                             
                             if shouldOpenUrl {
@@ -682,6 +685,11 @@ public final class ChatMessageWebpageBubbleContentNode: ChatMessageBubbleContent
                     }
                 }
                 return result
+            }
+
+            // MARK: NAGRAM tapping a link preview image opens the image
+            if case .url = result.content, self.contentNode.isPointInInlineMedia(point.offsetBy(dx: -contentNodeFrame.minX, dy: -contentNodeFrame.minY)), let webPage = self.webPage, case let .Loaded(content) = webPage.content, content.instantPage == nil, content.embedUrl == nil, content.story == nil, content.file == nil, content.image != nil, !(content.type ?? "").hasPrefix("telegram_") {
+                return ChatMessageBubbleContentTapAction(content: .openMessage)
             }
 
             switch result.content {
