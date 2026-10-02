@@ -36,7 +36,9 @@ func serviceTasksForChatPresentationIntefaceState(context: AccountContext, chatP
                             var inputState = interfaceState.composeInputState
                             let text = NSMutableAttributedString(attributedString: inputState.inputText)
                             
-                            inputState.inputText.enumerateAttribute(ChatTextInputAttributes.customEmoji, in: NSRange(location: 0, length: inputText.length), using: { value, range, _ in
+                            // MARK: NAGRAM
+                            // The outer `inputText` was captured when the task was created; by the time the emoji resolves the composer text may be shorter, and enumerating with the stale length throws NSRangeException.
+                            inputState.inputText.enumerateAttribute(ChatTextInputAttributes.customEmoji, in: NSRange(location: 0, length: inputState.inputText.length), using: { value, range, _ in
                                 if let value = value as? ChatTextInputTextCustomEmojiAttribute {
                                     if value.fileId == id {
                                         text.removeAttribute(ChatTextInputAttributes.customEmoji, range: range)
