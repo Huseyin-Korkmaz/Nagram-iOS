@@ -188,6 +188,45 @@ private let registeredProtocols: Void = {
 }()
 #endif
 
+// MARK: NAGRAM
+// WebKit throws NSInternalInconsistencyException when a JavaScript panel completion handler is released without being called.
+// That happens whenever the panel is dropped instead of shown (no window to present in) or torn down without an action.
+private final class JavaScriptPanelCompletion<Result> {
+    private var handler: ((Result) -> Void)?
+    private let unansweredResult: Result
+    
+    init(unansweredResult: Result, handler: @escaping (Result) -> Void) {
+        self.unansweredResult = unansweredResult
+        self.handler = handler
+    }
+    
+    func callAsFunction(_ result: Result) {
+        if let handler = self.handler {
+            self.handler = nil
+            handler(result)
+        }
+    }
+    
+    deinit {
+        if let handler = self.handler {
+            let unansweredResult = self.unansweredResult
+            if Thread.isMainThread {
+                handler(unansweredResult)
+            } else {
+                DispatchQueue.main.async {
+                    handler(unansweredResult)
+                }
+            }
+        }
+    }
+}
+
+private extension JavaScriptPanelCompletion where Result == Void {
+    func callAsFunction() {
+        self.callAsFunction(())
+    }
+}
+
 public final class WebAppController: ViewController, AttachmentContainable {
     public var requestAttachmentMenuExpansion: () -> Void = { }
     public var updateNavigationStack: (@escaping ([AttachmentContainable]) -> ([AttachmentContainable], AttachmentMediaPickerContext?)) -> Void = { _ in }
@@ -789,6 +828,8 @@ public final class WebAppController: ViewController, AttachmentContainable {
         }
                 
         func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+            // MARK: NAGRAM
+            let completion = JavaScriptPanelCompletion<Void>(unansweredResult: (), handler: { _ in completionHandler() })
             var completed = false
             let alertController = AlertScreen(
                 context: self.context,
@@ -798,7 +839,7 @@ public final class WebAppController: ViewController, AttachmentContainable {
                     .init(title: self.presentationData.strings.Common_OK, action: {
                         if !completed {
                             completed = true
-                            completionHandler()
+                            completion()
                         }
                     })
                 ]
@@ -807,7 +848,7 @@ public final class WebAppController: ViewController, AttachmentContainable {
                 if byOutsideTap {
                     if !completed {
                         completed = true
-                        completionHandler()
+                        completion()
                     }
                 }
             }
@@ -815,6 +856,8 @@ public final class WebAppController: ViewController, AttachmentContainable {
         }
 
         func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
+            // MARK: NAGRAM
+            let completion = JavaScriptPanelCompletion<Bool>(unansweredResult: false, handler: completionHandler)
             var completed = false
             let alertController = AlertScreen(
                 context: self.context,
@@ -824,13 +867,13 @@ public final class WebAppController: ViewController, AttachmentContainable {
                     .init(title: self.presentationData.strings.Common_Cancel, action: {
                         if !completed {
                             completed = true
-                            completionHandler(false)
+                            completion(false)
                         }
                     }),
                     .init(title: self.presentationData.strings.Common_OK, type: .default, action: {
                         if !completed {
                             completed = true
-                            completionHandler(true)
+                            completion(true)
                         }
                     })
                 ]
@@ -839,7 +882,7 @@ public final class WebAppController: ViewController, AttachmentContainable {
                 if byOutsideTap {
                     if !completed {
                         completed = true
-                        completionHandler(false)
+                        completion(false)
                     }
                 }
             }
@@ -847,6 +890,8 @@ public final class WebAppController: ViewController, AttachmentContainable {
         }
 
         func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+            // MARK: NAGRAM
+            let completion = JavaScriptPanelCompletion<String?>(unansweredResult: nil, handler: completionHandler)
             var completed = false
             let promptController = promptController(
                 context: self.context,
@@ -857,16 +902,16 @@ public final class WebAppController: ViewController, AttachmentContainable {
                     if !completed {
                         completed = true
                         if let value = value {
-                            completionHandler(value)
+                            completion(value)
                         } else {
-                            completionHandler(nil)
+                            completion(nil)
                         }
                     }
                 },
                 dismissed: {
                     if !completed {
                         completed = true
-                        completionHandler(nil)
+                        completion(nil)
                     }
                 }
             )
