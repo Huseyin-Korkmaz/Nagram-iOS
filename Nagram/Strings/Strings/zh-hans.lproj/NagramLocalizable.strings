@@ -19,6 +19,8 @@
 "Nagram.RoundVideoCamera" = "圆形视频默认摄像头";
 "Nagram.RoundVideoCamera.front" = "前置";
 "Nagram.RoundVideoCamera.back" = "后置";
+"Nagram.ChooseFolderAfterJoining" = "加入群组或频道后选择分组";
+"Nagram.JoinedChatFolderUnavailable" = "无法添加此聊天，分组可能已被删除或达到聊天数量上限。请整理分组后重试。";
 "Nagram.Section.MessageDisplay" = "消息显示";
 "Nagram.Section.MessageList" = "消息列表";
 "Nagram.StayAtLatestMessageAfterRefresh" = "刷新后保持最新消息";
@@ -484,6 +486,24 @@
 "Nagram.MediaMetadata.Bitrate" = "码率";
 "Nagram.MediaMetadata.Codec" = "编码";
 "Nagram.MediaMetadata.Unknown" = "未知";
+
+"Nagram.SaveSelectionUnavailable" = "部分所选消息已不可用，请重新选择后再收藏。";
+
+"Nagram.CopyImage" = "复制图片";
+"Nagram.ImageCopied" = "图片已复制";
+"Nagram.CopyImageFailed" = "无法复制此图片，请重新下载图片后重试。";
+
+"Nagram.HideFolderUnreadCount" = "隐藏分组标签未读数";
+
+"Nagram.ChatToolsEnabled" = "聊天顶部工具栏";
+"Nagram.ChatTools.search" = "搜索";
+"Nagram.ChatTools.media" = "媒体";
+"Nagram.ChatTools.pinned" = "置顶";
+"Nagram.ChatTools.beginning" = "开头";
+"Nagram.ChatTools.notifications" = "静音";
+"Nagram.ChatTools.unmute" = "取消静音";
+"Nagram.ChatTools.cache" = "清理缓存";
+"Nagram.ChatFolderNoneAvailable" = "没有可添加的分组。请先创建分组，或检查此聊天是否已加入所有分组。";
 
 "Nagram.InviteLinks.BulkRevoke" = "批量撤销邀请链接…";
 "Nagram.InviteLinks.ScopeInfo" = "仅处理额外的非永久邀请链接，主链接不会受到影响。";

@@ -10,7 +10,25 @@
 - 真机包永远不要开启 `disableProvisioningProfiles`，否则主 app 签名配置会走 `None` 分支。
 - 有正式/完整 provisioning 文件时，必须启用扩展；不要写 `build --//Telegram:disableExtensions`。
 - 只有免费 Apple ID 自签或模拟器免签时，才允许禁用扩展。
-- 本机当前使用 Xcode 26.5 CLI toolchain。Xcode 27 beta 相关问题不要和业务代码错误混在一起排查。
+- 2026-09-19 检查时，`/Applications/Xcode.app` 已是 Xcode 27，包含 iOS 27 SDK。下文 Xcode 26.5 workaround 属于历史配置，使用前必须核对实际安装版本。
+
+## UIScene 生命周期
+
+Nagram 的单窗口 scene 入口位于 `Nagram/AppLifecycle/SceneDelegate.swift`，通过 filegroup 编入 `TelegramUI`。`Telegram/BUILD` 和两个应用 plist 都声明了 `NagramSceneDelegate`。
+
+- `AppDelegate` 在进程启动时初始化账户、推送和后台任务，以及不依赖 `UIWindow` 的展示宿主；后台唤醒不需要先连接 scene。
+- scene 连接时创建 `UIWindow(windowScene:)`；断开时释放窗口，保留账户和展示状态供重连复用。
+- 前后台状态、冷/热启动 URL、Universal Links 和快捷操作从 scene 转发；通知响应继续由 `UNUserNotificationCenterDelegate` 处理，避免重复消费。
+- 不要再让根控制器覆盖 `windowScene.delegate`。
+- iOS 27 的键盘窗口通过当前 scene 的 `keyboardSceneDelegate.keyboardWindow` 获取；旧的 `remoteKeyboardWindowForScreen:create:` 会触发系统断言，只保留给较早系统使用。
+
+Xcode 更新后，本地 `build-input/xcode/BUILD` 声明可能与实际工具链不符。不要仅凭 IPA 的 `DTSDKName` 判断 SDK；用 `xcrun vtool -show-build <Telegram.app/Telegram>` 检查 Mach-O 的 `LC_BUILD_VERSION`。iOS 27 SDK 构建的包必须接入 scene 生命周期。
+
+UI 回归用例 `UITests/testSceneForegroundRoundTrip` 使用 `--ui-test` 隔离数据，检查启动、输入、前后台往返和键盘恢复；`UITests/testSceneColdURL` 检查冷启动链接打开代理预览，不启用代理。链接处理需要等待账户界面 `isReady`，避免 scene 连接早于界面展示时丢失操作。
+
+生成工程缓存缺失时，按 README 重新运行 `Make.py generateProject` 后再测试。旧 DerivedData 的构建记录可能遗漏 Bazel 输出，遇到框架产物不存在时可用新的 `-derivedDataPath`。本机启用 Nix 时，给 `xcodebuild` 设置 `PATH=/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin`，否则 GNU `find` 无法执行生成脚本的 BSD `find -depth 2` 参数。
+
+2026-09-19 使用 Xcode 27 / iOS 27 模拟器运行以上两个 UI 用例，均通过。最终 `debug_arm64` 包 33235 使用完整签名，保留全部 6 个扩展，已在 iOS 27.2 真机安装并启动。真机回归覆盖启动、前后台往返和热链接；远程通知、CallKit、系统后台唤醒和 scene 被系统回收后的重连尚未做端到端验证。
 
 ## 签名模式选择
 

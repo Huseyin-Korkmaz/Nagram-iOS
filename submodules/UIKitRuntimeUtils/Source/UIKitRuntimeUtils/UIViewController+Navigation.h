@@ -23,7 +23,8 @@ typedef NS_OPTIONS(NSUInteger, UIResponderDisableAutomaticKeyboardHandling) {
 
 - (void)internalSetStatusBarStyle:(UIStatusBarStyle)style animated:(BOOL)animated;
 - (void)internalSetStatusBarHidden:(BOOL)hidden animation:(UIStatusBarAnimation)animation;
-- (UIWindow * _Nullable)internalGetKeyboard;
+// MARK: NAGRAM — keyboard ownership follows the application window scene.
+- (UIWindow * _Nullable)internalGetKeyboardForScene:(UIWindowScene * _Nonnull)scene NS_SWIFT_NAME(internalGetKeyboard(scene:));
 
 @end
 

@@ -19,6 +19,8 @@
 "Nagram.RoundVideoCamera" = "丸いビデオの既定カメラ";
 "Nagram.RoundVideoCamera.front" = "フロント";
 "Nagram.RoundVideoCamera.back" = "リア";
+"Nagram.ChooseFolderAfterJoining" = "参加後にフォルダを選択";
+"Nagram.JoinedChatFolderUnavailable" = "追加できませんでした。フォルダが削除されたか、チャット数の上限に達しています。フォルダを整理して再試行してください。";
 "Nagram.Section.MessageDisplay" = "メッセージ表示";
 "Nagram.Section.MessageList" = "メッセージ一覧";
 "Nagram.StayAtLatestMessageAfterRefresh" = "更新後も最新メッセージを表示";
@@ -484,6 +486,24 @@ iCloud キーチェーン同期を有効にすると、バックアップは他�
 "Nagram.MediaMetadata.Bitrate" = "ビットレート";
 "Nagram.MediaMetadata.Codec" = "コーデック";
 "Nagram.MediaMetadata.Unknown" = "不明";
+
+"Nagram.SaveSelectionUnavailable" = "選択したメッセージの一部が利用できません。選択し直して再試行してください。";
+
+"Nagram.CopyImage" = "画像をコピー";
+"Nagram.ImageCopied" = "画像をコピーしました";
+"Nagram.CopyImageFailed" = "画像をコピーできませんでした。再ダウンロードしてお試しください。";
+
+"Nagram.HideFolderUnreadCount" = "フォルダの未読数を非表示";
+
+"Nagram.ChatToolsEnabled" = "チャット上部ツールバー";
+"Nagram.ChatTools.search" = "検索";
+"Nagram.ChatTools.media" = "メディア";
+"Nagram.ChatTools.pinned" = "ピン留め";
+"Nagram.ChatTools.beginning" = "最初へ";
+"Nagram.ChatTools.notifications" = "ミュート";
+"Nagram.ChatTools.unmute" = "通知オン";
+"Nagram.ChatTools.cache" = "キャッシュ削除";
+"Nagram.ChatFolderNoneAvailable" = "追加できるフォルダがありません。フォルダを作成するか、このチャットがすべてのフォルダに追加済みか確認してください。";
 
 "Nagram.InviteLinks.BulkRevoke" = "招待リンクを一括取り消し…";
 "Nagram.InviteLinks.ScopeInfo" = "追加の非永久招待リンクのみを処理します。メインリンクには影響しません。";

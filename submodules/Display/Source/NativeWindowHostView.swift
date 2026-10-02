@@ -87,7 +87,8 @@ private final class WindowRootViewControllerView: UIView {
     }
 }
 
-private final class WindowRootViewController: UIViewController, UIWindowSceneDelegate {
+// MARK: NAGRAM — the scene delegate owns lifecycle; the controller owns presentation.
+private final class WindowRootViewController: UIViewController {
     private var voiceOverStatusObserver: AnyObject?
     private var registeredForPreviewing = false
     
@@ -104,7 +105,8 @@ private final class WindowRootViewController: UIViewController, UIWindowSceneDel
             if oldValue != self.orientations {
                 if self.orientations == .portrait {
                     if #available(iOSApplicationExtension 16.0, iOS 16.0, *) {
-                        let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+                        // MARK: NAGRAM — use the scene that actually owns this controller.
+                        let windowScene = self.view.window?.windowScene
                         windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
                         self.setNeedsUpdateOfSupportedInterfaceOrientations()
                     } else if UIDevice.current.orientation != .portrait {
@@ -194,10 +196,7 @@ private final class WindowRootViewController: UIViewController, UIWindowSceneDel
         } else {
             self._systemUserInterfaceStyle.set(.light)
         }
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-            windowScene.delegate = self
-        }
+        // MARK: NAGRAM — do not replace UIKit's configured scene delegate here.
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -208,11 +207,6 @@ private final class WindowRootViewController: UIViewController, UIWindowSceneDel
         if let voiceOverStatusObserver = self.voiceOverStatusObserver {
             NotificationCenter.default.removeObserver(voiceOverStatusObserver)
         }
-    }
-    
-    @available(iOS 26.0, *)
-    func preferredWindowingControlStyle(for windowScene: UIWindowScene) -> UIWindowScene.WindowingControlStyle {
-        return .minimal
     }
     
     override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {
@@ -233,7 +227,8 @@ private final class WindowRootViewController: UIViewController, UIWindowSceneDel
     }
     
     override func loadView() {
-        self.view = WindowRootViewControllerView()
+        // MARK: NAGRAM — keep the presentation host alive during headless background launches.
+        self.view = NativeWindowEventView(frame: UIScreen.main.bounds)
         self.view.isOpaque = false
         self.view.backgroundColor = nil
     }
@@ -243,10 +238,11 @@ private final class WindowRootViewController: UIViewController, UIWindowSceneDel
     }
 }
 
-private final class NativeWindow: UIWindow, WindowHost {
+// MARK: NAGRAM — scene-independent event host; UIWindow is created only on scene connection.
+private final class NativeWindowEventView: UIView, WindowHost {
+    private var lastInterfaceOrientation: UIInterfaceOrientation?
     var updateSize: ((CGSize) -> Void)?
     var layoutSubviewsEvent: (() -> Void)?
-    var updateIsUpdatingOrientationLayout: ((Bool) -> Void)?
     var updateToInterfaceOrientation: ((UIInterfaceOrientation) -> Void)?
     var presentController: ((ContainableController, PresentationSurfaceLevel, Bool, @escaping () -> Void) -> Void)?
     var presentControllerInGlobalOverlay: ((_ controller: ContainableController) -> Void)?
@@ -317,17 +313,13 @@ private final class NativeWindow: UIWindow, WindowHost {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+        // MARK: NAGRAM — scene geometry replaces UIWindow's private orientation callback.
+        let orientation = getCurrentViewInterfaceOrientation(view: self)
+        if self.lastInterfaceOrientation != orientation {
+            self.lastInterfaceOrientation = orientation
+            self.updateToInterfaceOrientation?(orientation)
+        }
         self.layoutSubviewsEvent?()
-    }
-    
-    override func _update(toInterfaceOrientation arg1: Int32, duration arg2: Double, force arg3: Bool) {
-        self.updateIsUpdatingOrientationLayout?(true)
-        super._update(toInterfaceOrientation: arg1, duration: arg2, force: arg3)
-        self.updateIsUpdatingOrientationLayout?(false)
-        
-        let orientation = UIInterfaceOrientation(rawValue: Int(arg1)) ?? .unknown
-        self.updateToInterfaceOrientation?(orientation)
     }
     
     func present(_ controller: ContainableController, on level: PresentationSurfaceLevel, blockInteraction: Bool, completion: @escaping () -> Void) {
@@ -371,20 +363,19 @@ private final class NativeWindow: UIWindow, WindowHost {
     }
 }
 
-public func nativeWindowHostView() -> (UIWindow & WindowHost, WindowHostView) {
-    let window = NativeWindow(frame: UIScreen.main.bounds)
-    
+// MARK: NAGRAM — prepare account/UI context without requiring a connected scene.
+public func nativeWindowHostController() -> (UIViewController, WindowHostView) {
     let rootViewController = WindowRootViewController()
-    window.rootViewController = rootViewController
-    rootViewController.viewWillAppear(false)
-    rootViewController.view.frame = CGRect(origin: CGPoint(), size: window.bounds.size)
-    rootViewController.viewDidAppear(false)
+    let window = rootViewController.view as! NativeWindowEventView
+    let containerView = WindowRootViewControllerView(frame: window.bounds)
+    containerView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    window.addSubview(containerView)
     
     let hostView = WindowHostView(
-        containerView: rootViewController.view,
+        containerView: containerView,
         eventView: window,
         isRotating: {
-            return window.isRotating()
+            return rootViewController.transitionCoordinator != nil
         },
         systemUserInterfaceStyle: rootViewController.systemUserInterfaceStyle,
         currentInterfaceOrientation: {
@@ -405,18 +396,20 @@ public func nativeWindowHostView() -> (UIWindow & WindowHost, WindowHostView) {
     )
     
     rootViewController.transitionToSize = { [weak hostView] size, duration, orientation in
+        hostView?.isUpdatingOrientationLayout = true
         hostView?.updateSize?(size, duration, orientation)
+        hostView?.isUpdatingOrientationLayout = false
     }
     
-    window.updateSize = { _ in
+    window.updateSize = { [weak hostView, weak window] size in
+        guard let window = window else {
+            return
+        }
+        hostView?.updateSize?(size, 0.0, getCurrentViewInterfaceOrientation(view: window))
     }
     
     window.layoutSubviewsEvent = { [weak hostView] in
         hostView?.layoutSubviews?()
-    }
-    
-    window.updateIsUpdatingOrientationLayout = { [weak hostView] value in
-        hostView?.isUpdatingOrientationLayout = value
     }
     
     window.updateToInterfaceOrientation = { [weak hostView] orientation in
@@ -478,5 +471,29 @@ public func nativeWindowHostView() -> (UIWindow & WindowHost, WindowHostView) {
         }
     }
     
-    return (window, hostView)
+    return (rootViewController, hostView)
+}
+
+// MARK: NAGRAM — preserve WindowHost lookup for controllers hosted by a real scene window.
+private final class NativeSceneWindow: UIWindow, WindowHost {
+    private var host: WindowHost {
+        return self.rootViewController!.view as! WindowHost
+    }
+
+    func forEachController(_ f: (ContainableController) -> Void) { self.host.forEachController(f) }
+    func present(_ controller: ContainableController, on level: PresentationSurfaceLevel, blockInteraction: Bool, completion: @escaping () -> Void) {
+        self.host.present(controller, on: level, blockInteraction: blockInteraction, completion: completion)
+    }
+    func presentInGlobalOverlay(_ controller: ContainableController) { self.host.presentInGlobalOverlay(controller) }
+    func addGlobalPortalHostView(sourceView: PortalSourceView) { self.host.addGlobalPortalHostView(sourceView: sourceView) }
+    func invalidateDeferScreenEdgeGestures() { self.host.invalidateDeferScreenEdgeGestures() }
+    func invalidatePrefersOnScreenNavigationHidden() { self.host.invalidatePrefersOnScreenNavigationHidden() }
+    func invalidateSupportedOrientations() { self.host.invalidateSupportedOrientations() }
+    func cancelInteractiveKeyboardGestures() { self.host.cancelInteractiveKeyboardGestures() }
+}
+
+public func nativeWindow(scene: UIWindowScene, rootController: UIViewController) -> UIWindow & WindowHost {
+    let window = NativeSceneWindow(windowScene: scene)
+    window.rootViewController = rootController
+    return window
 }

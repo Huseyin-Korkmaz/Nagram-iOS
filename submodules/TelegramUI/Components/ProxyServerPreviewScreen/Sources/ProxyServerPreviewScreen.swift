@@ -558,6 +558,12 @@ public class ProxyServerPreviewScreen: ViewControllerComponentContainer {
         fatalError("init(coder:) has not been implemented")
     }
     
+    public override func loadDisplayNode() {
+        super.loadDisplayNode()
+        // MARK: NAGRAM — identify the URL destination in scene lifecycle UI tests.
+        self.node.hostView.accessibilityIdentifier = "ProxyServerPreview"
+    }
+
     public override func viewDidLoad() {
         super.viewDidLoad()
         

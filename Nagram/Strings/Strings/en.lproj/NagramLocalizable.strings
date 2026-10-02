@@ -19,6 +19,8 @@
 "Nagram.RoundVideoCamera" = "Default Camera for Round Videos";
 "Nagram.RoundVideoCamera.front" = "Front";
 "Nagram.RoundVideoCamera.back" = "Rear";
+"Nagram.ChooseFolderAfterJoining" = "Choose Folder After Joining";
+"Nagram.JoinedChatFolderUnavailable" = "Could not add this chat. The folder may have been deleted or reached its chat limit. Free up space in the folder and try again.";
 "Nagram.Section.MessageDisplay" = "Message Display";
 "Nagram.Section.MessageList" = "Message List";
 "Nagram.StayAtLatestMessageAfterRefresh" = "Stay at Latest After Refresh";
@@ -484,6 +486,24 @@ With iCloud Keychain sync on, backups follow your other devices and appear on th
 "Nagram.MediaMetadata.Bitrate" = "Bitrate";
 "Nagram.MediaMetadata.Codec" = "Codec";
 "Nagram.MediaMetadata.Unknown" = "Unknown";
+
+"Nagram.SaveSelectionUnavailable" = "Some selected messages are no longer available. Select the messages again and retry.";
+
+"Nagram.CopyImage" = "Copy Image";
+"Nagram.ImageCopied" = "Image copied";
+"Nagram.CopyImageFailed" = "Could not copy this image. Download it again and retry.";
+
+"Nagram.HideFolderUnreadCount" = "Hide Folder Unread Counts";
+
+"Nagram.ChatToolsEnabled" = "Chat Top Toolbar";
+"Nagram.ChatTools.search" = "Search";
+"Nagram.ChatTools.media" = "Media";
+"Nagram.ChatTools.pinned" = "Pinned";
+"Nagram.ChatTools.beginning" = "Beginning";
+"Nagram.ChatTools.notifications" = "Mute";
+"Nagram.ChatTools.unmute" = "Unmute";
+"Nagram.ChatTools.cache" = "Clear Cache";
+"Nagram.ChatFolderNoneAvailable" = "No folders are available. Create a folder first, or check whether this chat is already in every folder.";
 
 "Nagram.InviteLinks.BulkRevoke" = "Revoke Invitation Links…";
 "Nagram.InviteLinks.ScopeInfo" = "Only additional, non-permanent invite links will be processed. The main link will not be affected.";
