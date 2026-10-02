@@ -132,7 +132,12 @@ final class NagramSettingsCloudSync {
     static let shared = NagramSettingsCloudSync()
     private static let enabledKey = "nagram.iCloudSyncEnabled"
 
-    private let store = NSUbiquitousKeyValueStore.default
+    /// 只在同步已开启的路径上访问。实例化 `NSUbiquitousKeyValueStore` 会在缺少
+    /// `com.apple.developer.ubiquity-kvstore-identifier` entitlement 的构建里触发 SyncedDefaults 的
+    /// "BUG IN CLIENT OF KVS" fault（iOS 15 上报为 EXC_GUARD 模拟崩溃），所以不能在单例初始化时创建。
+    private var store: NSUbiquitousKeyValueStore {
+        return NSUbiquitousKeyValueStore.default
+    }
     private let lock = NSLock()
     private var observer: NSObjectProtocol?
     private var isStarted = false
