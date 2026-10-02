@@ -13,7 +13,8 @@ import AppBundle
 
 // MARK: NAGRAM
 private func loadWebBrowserAppIconImage(_ imageName: String) -> UIImage? {
-    if imageName == "Nagram" || imageName == "NagramBlock" || imageName == "NagramColorful" {
+    // Every Nagram alternate icon is an Icon Composer asset; loading one through UIImage(named:) throws on iOS 27.
+    if imageName.hasPrefix("Nagram") {
         for suffix in ["@3x", "@2x", "Ipad@2x", "LargeIpad@2x", "Ipad"] {
             let resourceName = "\(imageName)\(suffix)"
             if let path = getAppBundle().path(forResource: resourceName, ofType: "png"), let image = UIImage(contentsOfFile: path) {
