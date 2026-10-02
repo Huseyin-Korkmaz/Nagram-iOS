@@ -269,7 +269,18 @@ jobs:
             --configurationPath build-input/local-configuration.json \
             --codesigningInformationPath build-input/codesigning \
             --buildNumber="$BUILD_NUMBER" \
-            --configuration=release_arm64
+            --configuration=release_arm64 \
+            --outputBuildArtifactsPath build/artifacts
+
+      # Uploaded before the TestFlight step so the IPA and dSYMs survive an upload failure.
+      - name: Upload IPA and dSYMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nagram-${{ env.BUILD_NUMBER }}
+          path: |
+            build/artifacts/Telegram.ipa
+            build/artifacts/Telegram.DSYMs.zip
+          if-no-files-found: error
 
       - name: Upload to TestFlight
         env:
