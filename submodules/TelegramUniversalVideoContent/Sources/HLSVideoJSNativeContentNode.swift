@@ -805,7 +805,9 @@ private final class SharedHLSVideoJSContext: NSObject {
     
     private static func sendResponseFileAndClose(id: Int, file: TempBoxFile, fileRange: Range<Int>, range: Range<Int>, totalSize: Int, completion: @escaping ([String: Any]) -> Void) {
         Queue.concurrentDefaultQueue().async {
-            if let data = try? Data(contentsOf: URL(fileURLWithPath: file.path), options: .mappedIfSafe).subdata(in: fileRange) {
+            // MARK: NAGRAM — The partial file can be shorter than the reported range by the time it is read here; `subdata(in:)` traps on an out-of-bounds range, so answer with an error instead.
+            if let fileData = try? Data(contentsOf: URL(fileURLWithPath: file.path), options: .mappedIfSafe), fileRange.lowerBound >= 0, fileRange.upperBound <= fileData.count {
+                let data = fileData.subdata(in: fileRange)
                 completion([
                     "status": 200,
                     "statusText": "OK",
