@@ -66,10 +66,13 @@ public final class Database {
         if res == SQLITE_OK {
             return true
         } else {
+            // MARK: NAGRAM — Failures here are only asserted by callers, so release builds dropped them; keep them in the Postbox log.
+            // Statements can carry the database key, so only the leading keywords are logged.
+            let summary = SQL.split(separator: " ", maxSplits: 2).prefix(2).joined(separator: " ").split(separator: "=", maxSplits: 1).first.flatMap(String.init) ?? ""
             if let error = sqlite3_errmsg(self.handle), let str = NSString(utf8String: error) {
-                print("SQL error \(res): \(str) on SQL")
+                postboxLog("SQL error \(res): \(str) on \(summary)")
             } else {
-                print("SQL error \(res) on SQL")
+                postboxLog("SQL error \(res) on \(summary)")
             }
             return false
         }

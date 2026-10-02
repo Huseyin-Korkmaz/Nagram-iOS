@@ -1242,6 +1242,8 @@ public final class SqliteValueBox: ValueBox {
                 let status = sqlite3_prepare_v3(self.database.handle, "INSERT INTO t\(table.table.id) (key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", -1, SQLITE_PREPARE_PERSISTENT, &statement, nil)
                 if status != SQLITE_OK {
                     let errorText = self.database.currentError() ?? "Unknown error"
+                    // MARK: NAGRAM — The trap message is not preserved in release builds; record it before trapping.
+                    postboxLog("Couldn't prepare statement for t\(table.table.id) (status \(status)): \(errorText)")
                     postboxLogSync()
                     preconditionFailure(errorText)
                 }
@@ -1257,6 +1259,8 @@ public final class SqliteValueBox: ValueBox {
                 let status = sqlite3_prepare_v3(self.database.handle, "INSERT INTO t\(table.table.id) (key, value) VALUES(?, ?)", -1, SQLITE_PREPARE_PERSISTENT, &statement, nil)
                 if status != SQLITE_OK {
                     let errorText = self.database.currentError() ?? "Unknown error"
+                    // MARK: NAGRAM — The trap message is not preserved in release builds; record it before trapping.
+                    postboxLog("Couldn't prepare statement for t\(table.table.id) (status \(status)): \(errorText)")
                     postboxLogSync()
                     preconditionFailure(errorText)
                 }
@@ -1297,6 +1301,8 @@ public final class SqliteValueBox: ValueBox {
                 let status = sqlite3_prepare_v3(self.database.handle, "INSERT INTO t\(table.table.id) (key, value) VALUES(?, ?) ON CONFLICT(key) DO NOTHING", -1, SQLITE_PREPARE_PERSISTENT, &statement, nil)
                 if status != SQLITE_OK {
                     let errorText = self.database.currentError() ?? "Unknown error"
+                    // MARK: NAGRAM — The trap message is not preserved in release builds; record it before trapping.
+                    postboxLog("Couldn't prepare statement for t\(table.table.id) (status \(status)): \(errorText)")
                     postboxLogSync()
                     preconditionFailure(errorText)
                 }
@@ -1312,6 +1318,8 @@ public final class SqliteValueBox: ValueBox {
                 let status = sqlite3_prepare_v3(self.database.handle, "INSERT INTO t\(table.table.id) (key, value) VALUES(?, ?)", -1, SQLITE_PREPARE_PERSISTENT, &statement, nil)
                 if status != SQLITE_OK {
                     let errorText = self.database.currentError() ?? "Unknown error"
+                    // MARK: NAGRAM — The trap message is not preserved in release builds; record it before trapping.
+                    postboxLog("Couldn't prepare statement for t\(table.table.id) (status \(status)): \(errorText)")
                     postboxLogSync()
                     preconditionFailure(errorText)
                 }
