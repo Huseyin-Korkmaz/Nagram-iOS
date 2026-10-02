@@ -536,6 +536,8 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         let maybeAppGroupUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName)
         
         let buildConfig = BuildConfig(baseAppBundleId: baseAppBundleId)
+        // MARK: NAGRAM — iCloud settings sync needs the key-value store entitlement, which only iCloud-enabled builds carry.
+        NagramSettings.setICloudSyncAvailable(buildConfig.isICloudEnabled)
         self.buildConfig = buildConfig
         let signatureDict = BuildConfigExtra.signatureDict()
         

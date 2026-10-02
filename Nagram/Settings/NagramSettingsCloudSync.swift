@@ -145,8 +145,26 @@ final class NagramSettingsCloudSync {
 
     private init() {}
 
+    private static let availabilityLock = NSLock()
+    private static var keyValueStoreAvailable = false
+
+    /// 构建是否带 iCloud KVS entitlement。由 AppDelegate 在启动时按 BuildConfig 设置；
+    /// 没有 entitlement 的构建里同步始终视为关闭，不会实例化 KVS。
+    static var isKeyValueStoreAvailable: Bool {
+        get {
+            self.availabilityLock.lock()
+            defer { self.availabilityLock.unlock() }
+            return self.keyValueStoreAvailable
+        }
+        set {
+            self.availabilityLock.lock()
+            self.keyValueStoreAvailable = newValue
+            self.availabilityLock.unlock()
+        }
+    }
+
     static func isEnabled(defaults: UserDefaults = NagramDemoMode.userDefaults) -> Bool {
-        return !NagramDemoMode.isEnabled && defaults.bool(forKey: self.enabledKey)
+        return self.isKeyValueStoreAvailable && !NagramDemoMode.isEnabled && defaults.bool(forKey: self.enabledKey)
     }
 
     func setEnabled(_ enabled: Bool, defaults: UserDefaults = NagramDemoMode.userDefaults) {

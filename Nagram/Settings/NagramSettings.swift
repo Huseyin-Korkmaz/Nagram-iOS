@@ -162,6 +162,19 @@ public final class NagramSettings {
         return NagramSettingsCloudSync.isEnabled(defaults: defaults)
     }
 
+    /// 构建是否带 iCloud KVS entitlement；为 false 时设置页不显示 iCloud 同步开关。
+    public static var isICloudSyncAvailable: Bool {
+        return NagramSettingsCloudSync.isKeyValueStoreAvailable
+    }
+
+    /// 启动时由 AppDelegate 按 BuildConfig 调用一次。`shared` 可能在此之前已初始化，所以这里补一次 start。
+    public static func setICloudSyncAvailable(_ available: Bool) {
+        NagramSettingsCloudSync.isKeyValueStoreAvailable = available
+        if available {
+            NagramSettingsCloudSync.shared.start()
+        }
+    }
+
     private init() {
         NagramSettingsCloudSync.shared.start()
     }
