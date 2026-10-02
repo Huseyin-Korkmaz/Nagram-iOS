@@ -148,7 +148,9 @@ public func stringWithAppliedEntities(_ text: String, entities: [MessageTextEnti
         let originalRange = NSRange(location: entity.range.lowerBound, length: entity.range.upperBound - entity.range.lowerBound)
         var range = NSRange(location: originalRange.location + rangeDelta, length: originalRange.length)
         let stringLength = string.length
-        if range.location > stringLength {
+        // MARK: NAGRAM
+        // A formatted-date replacement shorter than its source text makes `rangeDelta` negative, which can push an entity nested at the start of that date below zero; a negative NSRange passes the upper-bound clamp and throws in addAttribute.
+        if range.location < 0 || range.length < 0 || range.location > stringLength {
             adjustedRanges.append(nil)
             continue
         } else if range.location + range.length > stringLength {
@@ -276,7 +278,9 @@ public func stringWithAppliedEntities(_ text: String, entities: [MessageTextEnti
                 let hashtag = nsString!.substring(with: range)
                 if i + 1 != entities.count {
                     if case .Mention = entities[i + 1].type {
-                        guard let nextRange = adjustedRanges[i + 1] else {
+                        // MARK: NAGRAM
+                        // `nextRange` was clamped before later date replacements could shorten the string; re-validate it before building the combined range.
+                        guard let nextRange = adjustedRanges[i + 1], nextRange.location + nextRange.length <= stringLength else {
                             break
                         }
                         if nextRange.location == range.location + range.length + 1 && nsString!.character(at: range.location + range.length) == 43 {
