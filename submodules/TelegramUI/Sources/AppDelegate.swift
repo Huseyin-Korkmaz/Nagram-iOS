@@ -1210,7 +1210,7 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
                 application.endBackgroundTask(id)
             }, backgroundTimeRemaining: { application.backgroundTimeRemaining }, acquireIdleExtension: {
                 return applicationBindings.pushIdleTimerExtension()
-            }, activeAccounts: sharedContext.activeAccountContexts |> map { ($0.0?.account, $0.1.map { ($0.0, $0.1.account) }) }, liveLocationPolling: liveLocationPolling, watchTasks: .single(nil), inForeground: applicationBindings.applicationInForeground, hasActiveAudioSession: self.hasActiveAudioSession.get(), notificationManager: notificationManager, mediaManager: sharedContext.mediaManager, callManager: sharedContext.callManager, accountUserInterfaceInUse: { id in
+            }, accountManager: sharedContext.accountManager, activeAccounts: sharedContext.activeAccountContexts |> map { ($0.0?.account, $0.1.map { ($0.0, $0.1.account) }) }, liveLocationPolling: liveLocationPolling, watchTasks: .single(nil), inForeground: applicationBindings.applicationInForeground, hasActiveAudioSession: self.hasActiveAudioSession.get(), notificationManager: notificationManager, mediaManager: sharedContext.mediaManager, callManager: sharedContext.callManager, accountUserInterfaceInUse: { id in
                 return sharedContext.accountUserInterfaceInUse(id)
             }, presentationData: {
                 return sharedContext.currentPresentationData.with({ $0 })
@@ -1230,6 +1230,28 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
             
             return .single(sharedApplicationContext)
         })
+        
+        // MARK: NAGRAM — A background launch has no assertion of its own; hold one until the startup
+        // database work drains so the process is not suspended while holding a shared-container lock.
+        final class LaunchTaskHolder {
+            var taskId: UIBackgroundTaskIdentifier?
+        }
+        let launchTaskHolder = LaunchTaskHolder()
+        let endLaunchTask: () -> Void = {
+            if let taskId = launchTaskHolder.taskId {
+                launchTaskHolder.taskId = nil
+                application.endBackgroundTask(taskId)
+            }
+        }
+        let launchTaskId = application.beginBackgroundTask(withName: "launch", expirationHandler: endLaunchTask)
+        if launchTaskId != .invalid {
+            launchTaskHolder.taskId = launchTaskId
+            let _ = (self.sharedContextPromise.get()
+            |> take(1)
+            |> deliverOnMainQueue).start(next: { sharedApplicationContext in
+                sharedApplicationContext.wakeupManager.completeLaunchAfterInitialTransactions(endLaunchTask)
+            })
+        }
             
         self.context.set(self.sharedContextPromise.get()
         |> deliverOnMainQueue
