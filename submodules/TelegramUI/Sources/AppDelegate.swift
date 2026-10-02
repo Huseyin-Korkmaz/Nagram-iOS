@@ -2212,6 +2212,8 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         } else {
             guard var encryptedPayload = payload.dictionaryPayload["p"] as? String else {
                 Logger.shared.log("App \(self.episodeId) PushRegistry", "encryptedPayload is nil")
+                // MARK: NAGRAM — PushKit aborts the app unless every VoIP push reports a call.
+                self.reportFailedIncomingCallKitCall()
                 completion()
                 return
             }
@@ -2222,16 +2224,22 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
             }
             guard let payloadData = Data(base64Encoded: encryptedPayload) else {
                 Logger.shared.log("App \(self.episodeId) PushRegistry", "Couldn't decode encryptedPayload")
+                // MARK: NAGRAM — PushKit aborts the app unless every VoIP push reports a call.
+                self.reportFailedIncomingCallKitCall()
                 completion()
                 return
             }
             guard let keyId = notificationPayloadKeyId(data: payloadData) else {
                 Logger.shared.log("App \(self.episodeId) PushRegistry", "Couldn't parse payload key id")
+                // MARK: NAGRAM — PushKit aborts the app unless every VoIP push reports a call.
+                self.reportFailedIncomingCallKitCall()
                 completion()
                 return
             }
             guard let accountManagerState = self.accountManagerState else {
                 Logger.shared.log("App \(self.episodeId) PushRegistry", "accountManagerState is nil")
+                // MARK: NAGRAM — PushKit aborts the app unless every VoIP push reports a call.
+                self.reportFailedIncomingCallKitCall()
                 completion()
                 return
             }
@@ -2249,16 +2257,22 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
 
             guard let accountId = maybeAccountId, let notificationKey = maybeNotificationKey else {
                 Logger.shared.log("App \(self.episodeId) PushRegistry", "accountId or notificationKey is nil")
+                // MARK: NAGRAM — PushKit aborts the app unless every VoIP push reports a call.
+                self.reportFailedIncomingCallKitCall()
                 completion()
                 return
             }
             guard let decryptedPayload = decryptedNotificationPayload(key: notificationKey, data: payloadData) else {
                 Logger.shared.log("App \(self.episodeId) PushRegistry", "Couldn't decrypt payload")
+                // MARK: NAGRAM — PushKit aborts the app unless every VoIP push reports a call.
+                self.reportFailedIncomingCallKitCall()
                 completion()
                 return
             }
             guard let payloadJson = try? JSONSerialization.jsonObject(with: decryptedPayload, options: []) as? [AnyHashable: Any] else {
                 Logger.shared.log("App \(self.episodeId) PushRegistry", "Couldn't decode payload json")
+                // MARK: NAGRAM — PushKit aborts the app unless every VoIP push reports a call.
+                self.reportFailedIncomingCallKitCall()
                 completion()
                 return
             }
@@ -2268,6 +2282,8 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         
         guard let (payloadJson, accountId) = decryptedPayloadAndAccountId else {
             Logger.shared.log("App \(self.episodeId) PushRegistry", "decryptedPayloadAndAccountId is nil")
+            // MARK: NAGRAM — PushKit aborts the app unless every VoIP push reports a call.
+            self.reportFailedIncomingCallKitCall()
             completion()
             return
         }
@@ -2314,6 +2330,8 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
                 phoneNumber: phoneNumber.flatMap(formatPhoneNumber),
                 isVideo: isVideo,
                 displayTitle: displayTitle,
+                // MARK: NAGRAM
+                fromVoIPPush: true,
                 completion: { error in
                     if let error = error {
                         if error.domain == "com.apple.CallKit.error.incomingcall" && (error.code == -3 || error.code == 3) {
@@ -2435,6 +2453,8 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
                 phoneNumber: phoneNumber.flatMap(formatPhoneNumber),
                 isVideo: callUpdate.isVideo,
                 displayTitle: callUpdate.peer.debugDisplayTitle,
+                // MARK: NAGRAM
+                fromVoIPPush: true,
                 completion: { error in
                     if let error = error {
                         if error.domain == "com.apple.CallKit.error.incomingcall" && (error.code == -3 || error.code == 3) {
