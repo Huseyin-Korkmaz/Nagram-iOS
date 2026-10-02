@@ -94,6 +94,12 @@ public final class SharedWakeupManager {
     
     private var accountsAndTasks: [(Account, Bool, AccountTasks)] = []
     
+    // MARK: NAGRAM — The shared account database is not gated; wait for it before releasing an assertion.
+    private let accountManager: AccountManager<TelegramAccountManagerTypes>
+    // MARK: NAGRAM — A background launch keeps its assertion until the initial accounts are registered and drained.
+    private var didReceiveInitialAccounts: Bool = false
+    private var pendingLaunchCompletion: (() -> Void)?
+    
     private var pendingMediaUploadsByKey: [PendingMediaUploadKey: Float] = [:]
     private var backgroundProcessingTaskProgressByKey: [PendingMediaUploadKey: Float] = [:]
     private var nextBackgroundProcessingTaskId: Int = 0
@@ -111,13 +117,14 @@ public final class SharedWakeupManager {
     private var backgroundStoryProcessingTaskCancellationRequestedByApp: Bool = false
     private var pendingBackgroundStoryProcessingTaskTimer: SwiftSignalKit.Timer?
 
-    public init(beginBackgroundTask: @escaping (String, @escaping () -> Void) -> UIBackgroundTaskIdentifier?, endBackgroundTask: @escaping (UIBackgroundTaskIdentifier) -> Void, backgroundTimeRemaining: @escaping () -> Double, acquireIdleExtension: @escaping () -> Disposable?, activeAccounts: Signal<(primary: Account?, accounts: [(AccountRecordId, Account)]), NoError>, liveLocationPolling: Signal<AccountRecordId?, NoError>, watchTasks: Signal<AccountRecordId?, NoError>, inForeground: Signal<Bool, NoError>, hasActiveAudioSession: Signal<Bool, NoError>, notificationManager: SharedNotificationManager?, mediaManager: MediaManager, callManager: PresentationCallManager?, accountUserInterfaceInUse: @escaping (AccountRecordId) -> Signal<Bool, NoError>, presentationData: @escaping () -> PresentationData?) {
+    public init(beginBackgroundTask: @escaping (String, @escaping () -> Void) -> UIBackgroundTaskIdentifier?, endBackgroundTask: @escaping (UIBackgroundTaskIdentifier) -> Void, backgroundTimeRemaining: @escaping () -> Double, acquireIdleExtension: @escaping () -> Disposable?, accountManager: AccountManager<TelegramAccountManagerTypes>, activeAccounts: Signal<(primary: Account?, accounts: [(AccountRecordId, Account)]), NoError>, liveLocationPolling: Signal<AccountRecordId?, NoError>, watchTasks: Signal<AccountRecordId?, NoError>, inForeground: Signal<Bool, NoError>, hasActiveAudioSession: Signal<Bool, NoError>, notificationManager: SharedNotificationManager?, mediaManager: MediaManager, callManager: PresentationCallManager?, accountUserInterfaceInUse: @escaping (AccountRecordId) -> Signal<Bool, NoError>, presentationData: @escaping () -> PresentationData?) {
         assert(Queue.mainQueue().isCurrent())
         
         self.beginBackgroundTask = beginBackgroundTask
         self.endBackgroundTask = endBackgroundTask
         self.backgroundTimeRemaining = backgroundTimeRemaining
         self.acquireIdleExtension = acquireIdleExtension
+        self.accountManager = accountManager
         self.presentationData = presentationData
         
         self.accountSettingsDisposable = (activeAccounts
@@ -269,7 +276,13 @@ public final class SharedWakeupManager {
                 return
             }
             strongSelf.accountsAndTasks = accountsAndTasks
-            strongSelf.checkTasks()
+            strongSelf.didReceiveInitialAccounts = true
+            if let pendingLaunchCompletion = strongSelf.pendingLaunchCompletion {
+                strongSelf.pendingLaunchCompletion = nil
+                strongSelf.checkTasks(completingAfterTransactions: [pendingLaunchCompletion])
+            } else {
+                strongSelf.checkTasks()
+            }
         })
         
         self.pendingMediaUploadsDisposable = (activeAccounts
@@ -956,12 +969,14 @@ public final class SharedWakeupManager {
             }
             strongSelf.currentExternalCompletionValidationTimer?.invalidate()
             strongSelf.currentExternalCompletionValidationTimer = nil
+            // MARK: NAGRAM — The fetch completion handler releases the wakeup assertion; drain transactions first.
+            var expiredCompletions: [() -> Void] = []
             if let (completion, timer) = strongSelf.currentExternalCompletion {
                 strongSelf.currentExternalCompletion = nil
                 timer.invalidate()
-                completion()
+                expiredCompletions.append(completion)
             }
-            strongSelf.checkTasks()
+            strongSelf.checkTasks(completingAfterTransactions: expiredCompletions)
         }, queue: Queue.mainQueue())
         self.currentExternalCompletion = (completion, timer)
         timer.start()
@@ -980,8 +995,17 @@ public final class SharedWakeupManager {
         self.checkTasks()
     }
     
+    // MARK: NAGRAM — A background launch keeps its assertion until the initial accounts are registered and drained.
+    func completeLaunchAfterInitialTransactions(_ completion: @escaping () -> Void) {
+        if self.didReceiveInitialAccounts {
+            self.checkTasks(completingAfterTransactions: [completion])
+        } else {
+            self.pendingLaunchCompletion = completion
+        }
+    }
+    
     // MARK: NAGRAM — Keep expiring background assertions until account transactions drain.
-    func checkTasks(endingBackgroundTask: UIBackgroundTaskIdentifier? = nil) {
+    func checkTasks(endingBackgroundTask: UIBackgroundTaskIdentifier? = nil, completingAfterTransactions: [() -> Void] = []) {
         var hasTasksForBackgroundExtension = false
         
         var hasActiveCalls = false
@@ -994,6 +1018,7 @@ public final class SharedWakeupManager {
         }
         
         var tasksToEndAfterTransactionsComplete = endingBackgroundTask.map { [$0] } ?? []
+        var completionsAfterTransactionsComplete = completingAfterTransactions
         
         if self.inForeground || self.hasActiveAudioSession || hasActiveCalls {
             if let (completion, timer) = self.currentExternalCompletion {
@@ -1019,7 +1044,8 @@ public final class SharedWakeupManager {
             if !hasTasksForBackgroundExtension && self.currentExternalCompletionValidationTimer == nil {
                 if let (completion, timer) = self.currentExternalCompletion {
                     self.currentExternalCompletion = nil
-                    completion()
+                    // MARK: NAGRAM — The fetch completion handler releases the wakeup assertion; drain transactions first.
+                    completionsAfterTransactionsComplete.append(completion)
                     timer.invalidate()
                 }
             }
@@ -1100,7 +1126,7 @@ public final class SharedWakeupManager {
             }
         }
         
-        self.updateAccounts(hasTasks: hasTasksForBackgroundExtension, tasksToEndAfterTransactionsComplete: tasksToEndAfterTransactionsComplete)
+        self.updateAccounts(hasTasks: hasTasksForBackgroundExtension, tasksToEndAfterTransactionsComplete: tasksToEndAfterTransactionsComplete, completionsAfterTransactionsComplete: completionsAfterTransactionsComplete)
         
         /*if !self.inForeground && pendingMessageCount != 0 && !self.hasActiveAudioSession {
             if self.silenceAudioRenderer == nil {
@@ -1135,7 +1161,7 @@ public final class SharedWakeupManager {
         }*/
     }
     
-    private func updateAccounts(hasTasks: Bool, tasksToEndAfterTransactionsComplete: [UIBackgroundTaskIdentifier]) {
+    private func updateAccounts(hasTasks: Bool, tasksToEndAfterTransactionsComplete: [UIBackgroundTaskIdentifier], completionsAfterTransactionsComplete: [() -> Void]) {
         let hasBackgroundLocationTask = self.accountsAndTasks.contains(where: { $0.2.backgroundLocation })
         
         if self.inForeground || self.hasActiveAudioSession || self.isInBackgroundExtension || self.backgroundProcessingTaskId != nil || self.backgroundStoryProcessingTaskId != nil || hasBackgroundLocationTask || (hasTasks && self.currentExternalCompletion != nil) || self.activeExplicitExtensionTimer != nil || self.silenceAudioRenderer != nil {
@@ -1156,6 +1182,9 @@ public final class SharedWakeupManager {
             
             for taskId in tasksToEndAfterTransactionsComplete {
                 self.endBackgroundTask(taskId)
+            }
+            for completion in completionsAfterTransactionsComplete {
+                completion()
             }
         } else {
             // MARK: NAGRAM — A deadline timer grants no background execution time.
@@ -1183,9 +1212,16 @@ public final class SharedWakeupManager {
                             shouldComplete = true
                         }
                     }
-                    if shouldComplete {
-                        for taskId in tasksToEndAfterTransactionsComplete {
-                            self.endBackgroundTask(taskId)
+                    if shouldComplete && (!tasksToEndAfterTransactionsComplete.isEmpty || !completionsAfterTransactionsComplete.isEmpty) {
+                        self.accountManager.afterPendingTransactions {
+                            Queue.mainQueue().async {
+                                for taskId in tasksToEndAfterTransactionsComplete {
+                                    self.endBackgroundTask(taskId)
+                                }
+                                for completion in completionsAfterTransactionsComplete {
+                                    completion()
+                                }
+                            }
                         }
                     }
                 }

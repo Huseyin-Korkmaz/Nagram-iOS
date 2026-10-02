@@ -12,6 +12,7 @@ import OverlayStatusController
 import AccountContext
 import NagramSettingsSignal
 import NagramSettings
+import NagramSettingsUI // MARK: NAGRAM
 import AlertUI
 import PresentationDataUtils
 import UndoUI
@@ -806,7 +807,8 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             nagramBottomBarSettingsSignal(),
             nagramBoolSignal("nagram.chatListFolderTabsCompact", defaultValue: false),
             nagramStringSignal("nagram.chatListFolderTabDisplayMode", defaultValue: NagramChatListFolderTabDisplayMode.text.rawValue),
-            nagramBoolSignal("nagram.hideAllChatsFolder", defaultValue: false)
+            nagramBoolSignal("nagram.hideAllChatsFolder", defaultValue: false),
+            nagramBoolSignal("nagram.hideFolderUnreadCount", defaultValue: false) // MARK: NAGRAM
         )
         |> deliverOnMainQueue).startStrict(next: { [weak self] _ in
             guard let self else {
@@ -5375,6 +5377,10 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                     switch result {
                     case .joined:
                         didJoin = true
+                        // MARK: NAGRAM
+                        nagramPresentFolderPickerAfterJoining(context: self.context, peerId: peerId, present: { [weak self] controller in
+                            self?.present(controller, in: .window(.root))
+                        })
                     case let .webView(webView):
                         let _ = (self.context.engine.data.get(TelegramEngine.EngineData.Item.Peer.Peer(id: peerId))
                         |> deliverOnMainQueue).startStandalone(next: { [weak self] peer in

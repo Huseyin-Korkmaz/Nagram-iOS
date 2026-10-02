@@ -46,6 +46,7 @@ class BazelCommandLine:
         self.show_actions = False
         self.enable_sandbox = False
         self.disable_provisioning_profiles = False
+        self.disable_extensions = False
         self.profile_swift = False
         self.embed_watch_app = False
         self.watch_api_id = None
@@ -134,6 +135,10 @@ class BazelCommandLine:
 
     def set_disable_provisioning_profiles(self):
         self.disable_provisioning_profiles = True
+
+    # MARK: NAGRAM
+    def set_disable_extensions(self):
+        self.disable_extensions = True
 
     def set_profile_swift(self, value):
         self.profile_swift = value
@@ -295,6 +300,9 @@ class BazelCommandLine:
 
         if self.disable_provisioning_profiles:
             combined_arguments += ['--//Telegram:disableProvisioningProfiles']
+        # MARK: NAGRAM
+        if self.disable_extensions:
+            combined_arguments += ['--//Telegram:disableExtensions']
 
         combined_arguments += self.common_args
         combined_arguments += self.common_build_args
@@ -1001,6 +1009,13 @@ def build(bazel, arguments):
             )
         else:
             print('TelegramBuild: warning: --embedWatchApp requires a device configuration (debug_arm64 or release_arm64); ignored for simulator builds.')
+    # MARK: NAGRAM
+    if arguments.disableProvisioningProfiles:
+        if arguments.configuration not in ('debug_sim_arm64', 'release_sim_arm64'):
+            raise Exception('--disableProvisioningProfiles is only valid for simulator configurations; device builds must keep provisioning profiles.')
+        bazel_command_line.set_disable_provisioning_profiles()
+    if arguments.disableExtensions:
+        bazel_command_line.set_disable_extensions()
     bazel_command_line.set_build_number(arguments.buildNumber)
     bazel_command_line.set_custom_target(arguments.target)
     bazel_command_line.set_continue_on_error(arguments.continueOnError)
@@ -1406,6 +1421,19 @@ if __name__ == '__main__':
         action='store_true',
         default=False,
         help='Respect MODULE.bazel.lock.'
+    )
+    # MARK: NAGRAM
+    buildParser.add_argument(
+        '--disableProvisioningProfiles',
+        action='store_true',
+        default=False,
+        help='Build for simulator without codesigning identities or provisioning profiles. Rejected for device configurations.'
+    )
+    buildParser.add_argument(
+        '--disableExtensions',
+        action='store_true',
+        default=False,
+        help='Build without app extensions.'
     )
     buildParser.add_argument(
         '--embedWatchApp',

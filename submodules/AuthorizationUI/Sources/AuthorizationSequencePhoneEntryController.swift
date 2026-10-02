@@ -156,6 +156,8 @@ public final class AuthorizationSequencePhoneEntryController: ViewController, MF
 
     // MARK: NAGRAM
     @objc private func nagramLoginButtonPressed() {
+        // The menu and the screens it opens are shown over this one; drop the phone field's keyboard first.
+        self.view.endEditing(true)
         self.nagramLoginOptionsPressed?()
     }
 

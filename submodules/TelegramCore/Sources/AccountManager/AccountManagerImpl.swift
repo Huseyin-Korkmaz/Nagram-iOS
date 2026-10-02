@@ -579,6 +579,12 @@ public final class AccountManager<Types: AccountManagerTypes> {
         self.mediaBox = MediaBox(basePath: basePath + "/media", isMainProcess: removeDatabaseOnError)
     }
     
+    // MARK: NAGRAM — Transactions here are never disabled in the background; this lets the wakeup manager
+    // wait for the ones already queued before it releases the assertion that keeps the process running.
+    public func afterPendingTransactions(_ f: @escaping () -> Void) {
+        self.queue.async(f)
+    }
+    
     public func transaction<T>(ignoreDisabled: Bool = false, _ f: @escaping (AccountManagerModifier<Types>) -> T) -> Signal<T, NoError> {
         return Signal { subscriber in
             let disposable = MetaDisposable()

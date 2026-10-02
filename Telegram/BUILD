@@ -1698,6 +1698,24 @@ plist_fragment(
     extension = "plist",
     template = 
     """
+    <!-- MARK: NAGRAM — single-window UIKit scene lifecycle. -->
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <false/>
+        <key>UISceneConfigurations</key>
+        <dict>
+            <key>UIWindowSceneSessionRoleApplication</key>
+            <array>
+                <dict>
+                    <key>UISceneConfigurationName</key>
+                    <string>Nagram</string>
+                    <key>UISceneDelegateClassName</key>
+                    <string>NagramSceneDelegate</string>
+                </dict>
+            </array>
+        </dict>
+    </dict>
     <key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
         <string>{telegram_bundle_id}.refresh</string>

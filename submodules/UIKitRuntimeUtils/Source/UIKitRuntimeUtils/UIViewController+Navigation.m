@@ -336,6 +336,15 @@ static NSMutableArray<CALayerSpringParametersOverride *> *currentSpringParameter
 
 @end
 
+// MARK: NAGRAM — scene-scoped replacement for the screen API that traps on iOS 27.
+@protocol NagramKeyboardSceneDelegate <NSObject>
+- (UIWindow * _Nullable)keyboardWindow;
+@end
+
+@protocol NagramKeyboardWindowScene <NSObject>
+- (id<NagramKeyboardSceneDelegate> _Nullable)keyboardSceneDelegate;
+@end
+
 @interface UIFocusSystem (Telegram)
 
 @end
@@ -728,18 +737,23 @@ static NSMutableDictionary<NSString *, TrustedWebRecord *> *trustedWebRecords() 
     }
 }*/
 
-- (UIWindow * _Nullable)internalGetKeyboard {
+- (UIWindow * _Nullable)internalGetKeyboardForScene:(UIWindowScene *)scene {
+    // MARK: NAGRAM — never invoke the removed screen-scoped path on iOS 27.
+    if (@available(iOS 27.0, *)) {
+        if (![scene respondsToSelector:@selector(keyboardSceneDelegate)]) {
+            [NSException raise:NSInternalInconsistencyException format:@"UIWindowScene keyboardSceneDelegate is unavailable"];
+        }
+        id<NagramKeyboardSceneDelegate> delegate = [(id<NagramKeyboardWindowScene>)scene keyboardSceneDelegate];
+        if (delegate != nil && ![delegate respondsToSelector:@selector(keyboardWindow)]) {
+            [NSException raise:NSInternalInconsistencyException format:@"UIKeyboardSceneDelegate keyboardWindow is unavailable"];
+        }
+        return [delegate keyboardWindow];
+    }
     Class windowClass = NSClassFromString(@"UIRemoteKeyboardWindow");
     if (!windowClass) {
         return nil;
     }
-    UIWindow *result = [(id<UIRemoteKeyboardWindowProtocol>)windowClass remoteKeyboardWindowForScreen:[UIScreen mainScreen] create:false];
-    
-    if (result) {
-        //dumpViews(result, @"");
-    }
-    
-    return result;
+    return [(id<UIRemoteKeyboardWindowProtocol>)windowClass remoteKeyboardWindowForScreen:scene.screen create:false];
 }
 
 @end

@@ -36,7 +36,10 @@ enum NagramSettingsSyncKeys {
         "nagram.chatListStartupFolderMode",
         "nagram.chatListFolderTabsCompact",
         "nagram.hideAllChatsFolder",
+        "nagram.hideFolderUnreadCount",
         "nagram.showFoldersInShareSheet",
+        "nagram.chooseFolderAfterJoining",
+        "nagram.chatToolsEnabled",
         "nagram.chatListFolderTabDisplayMode",
         "nagram.chatListMessagePreviewStyle",
         "nagram.chatListLines",
@@ -132,7 +135,12 @@ final class NagramSettingsCloudSync {
     static let shared = NagramSettingsCloudSync()
     private static let enabledKey = "nagram.iCloudSyncEnabled"
 
-    private let store = NSUbiquitousKeyValueStore.default
+    /// 只在同步已开启的路径上访问。实例化 `NSUbiquitousKeyValueStore` 会在缺少
+    /// `com.apple.developer.ubiquity-kvstore-identifier` entitlement 的构建里触发 SyncedDefaults 的
+    /// "BUG IN CLIENT OF KVS" fault（iOS 15 上报为 EXC_GUARD 模拟崩溃），所以不能在单例初始化时创建。
+    private var store: NSUbiquitousKeyValueStore {
+        return NSUbiquitousKeyValueStore.default
+    }
     private let lock = NSLock()
     private var observer: NSObjectProtocol?
     private var isStarted = false
@@ -140,8 +148,26 @@ final class NagramSettingsCloudSync {
 
     private init() {}
 
+    private static let availabilityLock = NSLock()
+    private static var keyValueStoreAvailable = false
+
+    /// 构建是否带 iCloud KVS entitlement。由 AppDelegate 在启动时按 BuildConfig 设置；
+    /// 没有 entitlement 的构建里同步始终视为关闭，不会实例化 KVS。
+    static var isKeyValueStoreAvailable: Bool {
+        get {
+            self.availabilityLock.lock()
+            defer { self.availabilityLock.unlock() }
+            return self.keyValueStoreAvailable
+        }
+        set {
+            self.availabilityLock.lock()
+            self.keyValueStoreAvailable = newValue
+            self.availabilityLock.unlock()
+        }
+    }
+
     static func isEnabled(defaults: UserDefaults = NagramDemoMode.userDefaults) -> Bool {
-        return !NagramDemoMode.isEnabled && defaults.bool(forKey: self.enabledKey)
+        return self.isKeyValueStoreAvailable && !NagramDemoMode.isEnabled && defaults.bool(forKey: self.enabledKey)
     }
 
     func setEnabled(_ enabled: Bool, defaults: UserDefaults = NagramDemoMode.userDefaults) {

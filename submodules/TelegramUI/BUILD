@@ -44,11 +44,12 @@ swift_library(
     module_name = "TelegramUI",
     srcs = glob([
         "Sources/**/*.swift",
-    ]),
+    ]) + ["//Nagram/AppLifecycle:AppLifecycle"], # MARK: NAGRAM — app scene integration.
     copts = [
         "-warnings-as-errors",
     ],
     deps = [
+        "//Nagram/ChatTools:NagramChatTools", # MARK: NAGRAM
         "//third-party/recaptcha:RecaptchaEnterprise",
         "//submodules/SSignalKit/SwiftSignalKit:SwiftSignalKit",
         "//submodules/SSignalKit/SSignalKit:SSignalKit",
@@ -72,6 +73,7 @@ swift_library(
         # MARK: NAGRAM — offline screenshot fixtures.
         "//Nagram/Demo:NagramDemo",
         "//Nagram/LinkMetadata:NagramLinkMetadata",
+        "//Nagram/MediaActions:NagramMediaActions", # MARK: NAGRAM
         "//Nagram/SettingsSignal:NagramSettingsSignal",
         "//Nagram/TelegramSettingsCloudSync:NagramTelegramSettingsCloudSync",
         "//Nagram/Strings:NagramStrings",

@@ -42,17 +42,17 @@ git submodule status --recursive   # 确认没有 + / - / U 前缀
 
 `local.bazelrc` 是本机配置,已 gitignore;仓库根 `.bazelrc` 末尾会 `try-import %workspace%/local.bazelrc`。`bazel clean --expunge` / `Make.py clean` 会删掉它,清理后要按当前模式重建。
 
-| 模式 | provisioning 状态 | `local.bazelrc` 里是否允许禁用扩展 |
+| 模式 | provisioning 状态 | 是否允许禁用扩展 |
 |---|---|---|
 | 正式/完整签名真机包 | 主 app + 6 个扩展都有 profile | **不允许**写 `build --//Telegram:disableExtensions` |
-| 免费 Apple ID 自签 | 通常只有主 app profile | 可以写 `build --//Telegram:disableExtensions` |
-| 模拟器免签 | 不需要 profile | 可以同时写 `build --//Telegram:disableProvisioningProfiles` 和 `build --//Telegram:disableExtensions` |
+| 免费 Apple ID 自签 | 通常只有主 app profile | `local.bazelrc` 可以写 `build --//Telegram:disableExtensions` |
+| 模拟器免签 | 不需要 profile | 不改 `local.bazelrc`,给 `Make.py build` 加 `--disableProvisioningProfiles --disableExtensions` |
 
 硬规则:
 
 - 有正式/完整 provisioning 文件时,必须启用扩展;不要禁用 `Share`、`NotificationContent`、`NotificationService`、`Intents`、`Widget`、`BroadcastUpload`。
 - 真机包永远不要写 `build --//Telegram:disableProvisioningProfiles`,否则主 app 签名会走 `None` 分支。
-- `Make.py build` 不接受 `--disableProvisioningProfiles` / `--disableExtensions` 命令行参数;这些 Bazel flag 放进 `local.bazelrc`,或走 direct Bazel。
+- 模拟器构建通过 `Make.py build` 的 `--disableProvisioningProfiles` / `--disableExtensions` 命令行参数切换,不要为此改 `local.bazelrc`。`--disableProvisioningProfiles` 只接受模拟器配置,真机配置会直接报错。
 
 ### 真机(正式/完整 provisioning)
 
@@ -176,14 +176,7 @@ xcrun devicectl device install app --device <DEVICE_UDID> /tmp/tg-device/Payload
 
 ### 模拟器(免签,验证最快)
 
-模拟器免签名 + 免扩展时,`local.bazelrc` 可以临时写:
-
-```
-build --//Telegram:disableProvisioningProfiles
-build --//Telegram:disableExtensions
-```
-
-编译:
+模拟器免签名 + 免扩展通过命令行参数开启,不需要改 `local.bazelrc`(保持真机配置即可):
 
 ```sh
 python3 build-system/Make/Make.py --overrideXcodeVersion \
@@ -191,7 +184,8 @@ python3 build-system/Make/Make.py --overrideXcodeVersion \
   build \
   --configurationPath build-system/appstore-configuration.json \
   --xcodeManagedCodesigning --buildNumber=1 \
-  --configuration=debug_sim_arm64 --continueOnError
+  --configuration=debug_sim_arm64 --continueOnError \
+  --disableProvisioningProfiles --disableExtensions
 ```
 
 产物为 `bazel-bin/Telegram/Telegram.ipa`(bundle id `ph.telegra.Telegraph`)。安装到已启动的模拟器:
@@ -306,7 +300,7 @@ If you encounter this issue, re-run the project generation steps in the README.
 
 ## Codesigning is not required for simulator-only builds
 
-Nagram note: this upstream tip only applies to generating a simulator-only Xcode project. For current Nagram `Make.py build`, put `build --//Telegram:disableProvisioningProfiles` in `local.bazelrc`. Do not use it for device builds or when full provisioning profiles are present.
+Nagram note: this upstream tip only applies to generating a simulator-only Xcode project. For current Nagram `Make.py build`, pass `--disableProvisioningProfiles --disableExtensions` on the command line. Do not use it for device builds or when full provisioning profiles are present.
 
 Upstream example:
 ```

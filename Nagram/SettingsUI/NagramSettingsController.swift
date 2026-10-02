@@ -406,8 +406,10 @@ private func nagramGroups(
             .startupFolder(titleKey: "Nagram.ChatListStartupFolder"),
             .choice(titleKey: "Nagram.ChatListFolderTabDisplayMode", prefix: "Nagram.ChatListFolderTabDisplayMode", options: ["text", "icon", "both"], current: { NagramSettings.shared.chatListFolderTabDisplayModeValue.rawValue }, set: { NagramSettings.shared.chatListFolderTabDisplayMode = $0 }),
             .toggle(titleKey: "Nagram.ChatListFolderTabsCompact", get: { NagramSettings.shared.chatListFolderTabsCompact }, set: { NagramSettings.shared.chatListFolderTabsCompact = $0 }),
+            .toggle(titleKey: "Nagram.HideFolderUnreadCount", get: { NagramSettings.shared.hideFolderUnreadCount }, set: { NagramSettings.shared.hideFolderUnreadCount = $0 }),
             .toggle(titleKey: "Nagram.HideAllChatsFolder", get: { NagramSettings.shared.hideAllChatsFolder }, set: { NagramSettings.shared.hideAllChatsFolder = $0 }),
             .toggle(titleKey: "Nagram.ShowFoldersInShareSheet", get: { NagramSettings.shared.showFoldersInShareSheet }, set: { NagramSettings.shared.showFoldersInShareSheet = $0 }),
+            .toggle(titleKey: "Nagram.ChooseFolderAfterJoining", get: { NagramSettings.shared.chooseFolderAfterJoining }, set: { NagramSettings.shared.chooseFolderAfterJoining = $0 }),
             .toggle(titleKey: "Nagram.HideSavedAndArchivedMessagesInList", get: { NagramSettings.shared.hideSavedAndArchivedMessagesInList }, set: { NagramSettings.shared.hideSavedAndArchivedMessagesInList = $0 }),
             .toggle(titleKey: "Nagram.DisableCommunityChatGrouping", get: { NagramSettings.shared.disableCommunityChatGrouping }, set: { NagramSettings.shared.disableCommunityChatGrouping = $0 }),
             .choice(titleKey: "Nagram.CommunityAvatarTapAction", prefix: "Nagram.CommunityAvatarTapAction", options: NagramCommunityAvatarTapAction.allCases.map { $0.rawValue }, current: { NagramSettings.shared.communityAvatarTapActionValue.rawValue }, set: { NagramSettings.shared.communityAvatarTapAction = $0 }),
@@ -444,6 +446,7 @@ private func nagramGroups(
         ]),
         // 消息
         NagramGroup(tab: .chat, headerKey: "Nagram.Section.MessageDisplay", footerKey: nil, rows: [
+            .toggle(titleKey: "Nagram.ChatToolsEnabled", get: { NagramSettings.shared.chatToolsEnabled }, set: { NagramSettings.shared.chatToolsEnabled = $0 }),
             .toggle(titleKey: "Nagram.SecondsInMessages", get: { NagramSettings.shared.secondsInMessages }, set: { NagramSettings.shared.secondsInMessages = $0 }),
             .toggle(titleKey: "Nagram.ShowForwardedMessageDate", get: { NagramSettings.shared.showForwardedMessageDate }, set: { NagramSettings.shared.showForwardedMessageDate = $0 }),
             .toggle(titleKey: "Nagram.HideReactions", get: { NagramSettings.shared.hideReactions }, set: { NagramSettings.shared.hideReactions = $0 }),
@@ -545,7 +548,10 @@ private func nagramGroups(
             .navigation(titleKey: "Nagram.SessionBackup", action: sessionBackupAction),
             .toggle(titleKey: "Nagram.SessionBackup.ICloud", get: { NagramSettings.shared.sessionBackupICloudSync }, set: { NagramSettings.shared.sessionBackupICloudSync = $0 }),
         ]),
-    ]
+    ].filter { group in
+        // 没有 iCloud KVS entitlement 的构建里同步不可用，不显示该分组。
+        return group.headerKey != "Nagram.Section.Sync" || NagramSettings.isICloudSyncAvailable
+    }
 }
 
 private final class NagramSettingsArguments {

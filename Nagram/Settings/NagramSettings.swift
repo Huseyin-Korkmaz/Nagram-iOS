@@ -162,6 +162,19 @@ public final class NagramSettings {
         return NagramSettingsCloudSync.isEnabled(defaults: defaults)
     }
 
+    /// 构建是否带 iCloud KVS entitlement；为 false 时设置页不显示 iCloud 同步开关。
+    public static var isICloudSyncAvailable: Bool {
+        return NagramSettingsCloudSync.isKeyValueStoreAvailable
+    }
+
+    /// 启动时由 AppDelegate 按 BuildConfig 调用一次。`shared` 可能在此之前已初始化，所以这里补一次 start。
+    public static func setICloudSyncAvailable(_ available: Bool) {
+        NagramSettingsCloudSync.isKeyValueStoreAvailable = available
+        if available {
+            NagramSettingsCloudSync.shared.start()
+        }
+    }
+
     private init() {
         NagramSettingsCloudSync.shared.start()
     }
@@ -379,12 +392,18 @@ public final class NagramSettings {
     /// 首页分组标签紧凑布局
     @NagramDefault("nagram.chatListFolderTabsCompact", false)
     public var chatListFolderTabsCompact: Bool
+    @NagramDefault("nagram.hideFolderUnreadCount", false)
+    public var hideFolderUnreadCount: Bool
     /// 隐藏首页的“全部会话”分组（至少存在一个自定义分组时生效）
     @NagramDefault("nagram.hideAllChatsFolder", false)
     public var hideAllChatsFolder: Bool
     /// 分享面板显示聊天文件夹标签
     @NagramDefault("nagram.showFoldersInShareSheet", true)
     public var showFoldersInShareSheet: Bool
+    @NagramDefault("nagram.chatToolsEnabled", false)
+    public var chatToolsEnabled: Bool
+    @NagramDefault("nagram.chooseFolderAfterJoining", false)
+    public var chooseFolderAfterJoining: Bool
     /// 首页分组标签显示方式（"text" / "icon" / "both"）
     @NagramDefault("nagram.chatListFolderTabDisplayMode", NagramChatListFolderTabDisplayMode.text.rawValue)
     public var chatListFolderTabDisplayMode: String

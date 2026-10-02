@@ -15,14 +15,9 @@ Nagram-iOS is a Chinese-user-focused enhancement fork of Telegram-iOS, aligned w
 
 The app uses Bazel via `build-system/Make/Make.py`. There is no supported per-module app build; validation builds the full `Telegram/Telegram` target. Use `--continueOnError` to forward Bazel's `--keep_going`.
 
-Signing flags belong in the gitignored `local.bazelrc`:
+Simulator builds pass `--disableProvisioningProfiles --disableExtensions` to `Make.py build` on the command line; do not edit the gitignored `local.bazelrc` to switch signing mode. `local.bazelrc` holds the machine's toolchain workarounds and the device signing mode, so it stays as it is across simulator builds.
 
-```
-build --//Telegram:disableProvisioningProfiles
-build --//Telegram:disableExtensions
-```
-
-These two flags are for simulator builds. Device builds must never disable provisioning profiles; full/formal signing with all seven profiles must also keep all six extensions enabled. Free Apple ID signing may disable extensions only. `Make.py clean` runs `bazel clean --expunge` and can remove `local.bazelrc`.
+Device builds must never disable provisioning profiles (`Make.py build` rejects `--disableProvisioningProfiles` for device configurations); full/formal signing with all seven profiles must also keep all six extensions enabled. Free Apple ID signing may disable extensions only. `Make.py clean` runs `bazel clean --expunge` and can remove `local.bazelrc`.
 
 Simulator build:
 
@@ -32,7 +27,8 @@ python3 build-system/Make/Make.py --overrideXcodeVersion \
   build \
   --configurationPath build-system/appstore-configuration.json \
   --xcodeManagedCodesigning --buildNumber=1 \
-  --configuration=debug_sim_arm64 --continueOnError
+  --configuration=debug_sim_arm64 --continueOnError \
+  --disableProvisioningProfiles --disableExtensions
 ```
 
 Full/formal device build:

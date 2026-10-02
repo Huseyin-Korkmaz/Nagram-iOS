@@ -1,4 +1,5 @@
 import Foundation
+import NagramMediaActions // MARK: NAGRAM
 import UIKit
 import Postbox
 import SwiftSignalKit
@@ -16,6 +17,7 @@ import TextFormat
 import TelegramBaseController
 import AccountContext
 import NagramSettings // MARK: NAGRAM
+import NagramSettingsUI // MARK: NAGRAM
 import TelegramStringFormatting
 import OverlayStatusController
 import DeviceLocationManager
@@ -5346,6 +5348,10 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
                     switch result {
                     case .joined:
                         self.present(UndoOverlayController(presentationData: presentationData, content: .succeed(text: presentationData.strings.Chat_SimilarChannels_JoinedChannel(peer.compactDisplayTitle).string, timeout: nil, customUndoText: nil), elevatedLayout: false, position: .top, animateInAsReplacement: false, action: { _ in return false }), in: .current)
+                        // MARK: NAGRAM
+                        nagramPresentFolderPickerAfterJoining(context: self.context, peerId: peer.id, present: { [weak self] controller in
+                            self?.present(controller, in: .window(.root))
+                        })
                     case let .webView(webView):
                         self.context.sharedContext.openJoinChatWebView(context: self.context, parentController: self, updatedPresentationData: self.updatedPresentationData, webView: webView, chatTitle: peer.compactDisplayTitle)
                     }
@@ -7996,6 +8002,11 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
                                     case let .joined(peer):
                                         if peer == nil {
                                             strongSelf.dismiss()
+                                        } else if let peer {
+                                            // MARK: NAGRAM
+                                            nagramPresentFolderPickerAfterJoining(context: strongSelf.context, peerId: peer.id, present: { [weak self] controller in
+                                                self?.present(controller, in: .window(.root))
+                                            })
                                         }
                                     case let .webView(webView):
                                         strongSelf.context.sharedContext.openJoinChatWebView(context: strongSelf.context, parentController: strongSelf, updatedPresentationData: strongSelf.updatedPresentationData, webView: webView, chatTitle: EnginePeer(peer).compactDisplayTitle)
@@ -11279,24 +11290,13 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
             return false
         }
 
-        let forwardAttributes: [EngineMessage.Attribute]
-        if hideNames {
-            forwardAttributes = [
-                ForwardOptionsMessageAttribute(hideNames: true, hideCaptions: false)
-            ]
-        } else {
-            forwardAttributes = []
-        }
-        
-        let repeatedMessages = messages.map { message -> EnqueueMessage in
-            return .forward(source: message.id, threadId: self.chatLocation.threadId, grouping: .auto, attributes: forwardAttributes, correlationId: nil)
-        }
+        let repeatedMessages = nagramRepeatedMessages(messages, threadId: self.chatLocation.threadId, hideNames: hideNames, copyProtectionEnabled: self.presentationInterfaceState.copyProtectionEnabled)
         self.chatDisplayNode.setupSendActionOnViewUpdate({}, nil)
         self.chatDisplayNode.sendMessages(repeatedMessages, nil, nil, nil, repeatedMessages.count > 1, false)
         return true
     }
 
-    // Keep double-tap repeat aligned with messages that can safely use the native forward pipeline.
+    // Keep double-tap repeat aligned with messages supported by the repeat send pipeline.
     private func nagramCanRepeatMessage(_ message: EngineRawMessage) -> Bool {
         if Namespaces.Message.allScheduled.contains(message.id.namespace) {
             return false

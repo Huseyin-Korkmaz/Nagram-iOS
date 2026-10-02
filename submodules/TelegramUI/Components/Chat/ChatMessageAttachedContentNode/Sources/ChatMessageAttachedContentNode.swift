@@ -1619,9 +1619,16 @@ public final class ChatMessageAttachedContentNode: ASDisplayNode {
                     contentImageNode.updateIsHidden(found)
                     return found
                 }
+                // MARK: NAGRAM link preview images open in the gallery
+                if let inlineMedia = self.inlineMedia, case .media = self.inlineMediaValue {
+                    inlineMedia.isHidden = found
+                    return found
+                }
             } else if let contentImageNode = self.contentMedia {
                 contentImageNode.isHidden = false
                 contentImageNode.updateIsHidden(false)
+            } else if let inlineMedia = self.inlineMedia {
+                inlineMedia.isHidden = false
             }
         }
         return false
@@ -1641,7 +1648,21 @@ public final class ChatMessageAttachedContentNode: ASDisplayNode {
                 return (contentImageNode?.view.snapshotContentTree(unhide: true), nil)
             })
         }
+        // MARK: NAGRAM link preview images open in the gallery
+        if let inlineMedia = self.inlineMedia, case let .media(inlineMediaValue) = self.inlineMediaValue, inlineMediaValue.isEqual(to: media) {
+            return (inlineMedia, inlineMedia.bounds, { [weak inlineMedia] in
+                return (inlineMedia?.view.snapshotContentTree(unhide: true), nil)
+            })
+        }
         return nil
+    }
+    
+    // MARK: NAGRAM link preview images open in the gallery
+    public func isPointInInlineMedia(_ point: CGPoint) -> Bool {
+        if let inlineMedia = self.inlineMedia, case .media = self.inlineMediaValue {
+            return inlineMedia.frame.contains(point)
+        }
+        return false
     }
     
     public func hasActionAtPoint(_ point: CGPoint) -> Bool {

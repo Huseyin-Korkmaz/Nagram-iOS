@@ -77,11 +77,12 @@ public final class CallKitIntegration {
         sharedProviderDelegate?.dropCall(uuid: uuid)
     }
     
-    public func reportIncomingCall(uuid: UUID, stableId: Int64, handle: String, phoneNumber: String?, isVideo: Bool, displayTitle: String, completion: ((NSError?) -> Void)?) {
+    // MARK: NAGRAM — fromVoIPPush marks reports that PushKit requires for a delivered VoIP push.
+    public func reportIncomingCall(uuid: UUID, stableId: Int64, handle: String, phoneNumber: String?, isVideo: Bool, displayTitle: String, fromVoIPPush: Bool = false, completion: ((NSError?) -> Void)?) {
         #if DEBUG
         print("CallKitIntegration: Report incoming call \(uuid)")
         #endif
-        sharedProviderDelegate?.reportIncomingCall(uuid: uuid, stableId: stableId, handle: handle, phoneNumber: phoneNumber, isVideo: isVideo, displayTitle: displayTitle, completion: completion)
+        sharedProviderDelegate?.reportIncomingCall(uuid: uuid, stableId: stableId, handle: handle, phoneNumber: phoneNumber, isVideo: isVideo, displayTitle: displayTitle, fromVoIPPush: fromVoIPPush, completion: completion)
     }
     
     func reportOutgoingCallConnected(uuid: UUID, at date: Date) {
@@ -246,8 +247,30 @@ class CallKitProviderDelegate: NSObject, CXProviderDelegate {
         })
     }
     
-    func reportIncomingCall(uuid: UUID, stableId: Int64, handle: String, phoneNumber: String?, isVideo: Bool, displayTitle: String, completion: ((NSError?) -> Void)?) {
+    func reportIncomingCall(uuid: UUID, stableId: Int64, handle: String, phoneNumber: String?, isVideo: Bool, displayTitle: String, fromVoIPPush: Bool, completion: ((NSError?) -> Void)?) {
         if self.alreadyReportedIncomingCalls.contains(uuid) {
+            // MARK: NAGRAM
+            // PushKit aborts the app when a VoIP push is not followed by reportNewIncomingCall, including a push for a call
+            // that was already reported from the network connection or has already been dropped.
+            // A call CallKit still tracks rejects the duplicate report; one it no longer tracks is over, so it is ended at once.
+            if fromVoIPPush {
+                let update = CXCallUpdate()
+                if let phoneNumber = phoneNumber {
+                    update.remoteHandle = CXHandle(type: .phoneNumber, value: phoneNumber)
+                } else {
+                    update.remoteHandle = CXHandle(type: .generic, value: handle)
+                }
+                update.localizedCallerName = displayTitle
+                update.hasVideo = isVideo
+                
+                Logger.shared.log("CallKitIntegration", "report duplicate incoming call \(uuid) for VoIP push")
+                
+                self.provider.reportNewIncomingCall(with: uuid, update: update, completion: { error in
+                    if error == nil {
+                        self.provider.reportCall(with: uuid, endedAt: nil, reason: CXCallEndedReason.remoteEnded)
+                    }
+                })
+            }
             completion?(nil)
             return
         }

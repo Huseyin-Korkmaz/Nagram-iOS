@@ -8,6 +8,7 @@ import SwiftSignalKit
 import AccountContext
 // MARK: NAGRAM
 import NagramSettings
+import NagramSettingsUI // MARK: NAGRAM
 import NagramSettingsSignal
 import TelegramPresentationData
 import TelegramUIPreferences
@@ -5847,6 +5848,9 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
                     strongSelf.context.sharedContext.makeContentReportScreen(context: strongSelf.context, subject: .messages(Array(messageIds).sorted()), forceDark: false, present: { [weak self] controller in
                         self?.controller?.push(controller)
                     }, completion: {}, requestSelectMessages: nil)
+                }, saveMessages: { [weak self] messages in
+                    // MARK: NAGRAM
+                    self?.saveMessagesToSavedMessages(messageIds: Set(messages.map { $0.id }))
                 }, displayCopyProtectionTip: { [weak self] sourceView, save in
                     if let strongSelf = self, let peer = strongSelf.data?.peer, let messageIds = strongSelf.state.selectedMessageIds, !messageIds.isEmpty {
                         let _ = (strongSelf.context.engine.data.get(EngineDataMap(
@@ -6395,6 +6399,10 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
             switch result {
             case .joined:
                 self.controller?.present(UndoOverlayController(presentationData: presentationData, content: .succeed(text: presentationData.strings.Chat_SimilarChannels_JoinedChannel(peer.compactDisplayTitle).string, timeout: nil, customUndoText: nil), elevatedLayout: false, animateInAsReplacement: false, action: { _ in return false }), in: .window(.root))
+                // MARK: NAGRAM
+                nagramPresentFolderPickerAfterJoining(context: self.context, peerId: peer.id, present: { [weak self] controller in
+                    self?.controller?.present(controller, in: .window(.root))
+                })
             case let .webView(webView):
                 if let controller = self.controller {
                     self.context.sharedContext.openJoinChatWebView(context: self.context, parentController: controller, updatedPresentationData: self.controller?.updatedPresentationData, webView: webView, chatTitle: peer.compactDisplayTitle)

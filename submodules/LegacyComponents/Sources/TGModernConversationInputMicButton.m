@@ -262,6 +262,13 @@ static const CGFloat outerCircleMinScale = innerCircleRadius / outerCircleRadius
     
     centerPoint.x += _centerOffset.x;
     centerPoint.y += _centerOffset.y;
+    // MARK: NAGRAM
+    // On iOS 27 the presentation view can be mid-transition with a non-invertible transform when
+    // recording starts from a layout pass; the conversion then yields NaN and CALayer throws.
+    // displayLinkUpdate calls this every frame, so the overlay is positioned on the next valid frame.
+    if (!isfinite(centerPoint.x) || !isfinite(centerPoint.y)) {
+        return;
+    }
     _innerCircleView.center = centerPoint;
     _outerCircleView.center = centerPoint;
     _decoration.center = centerPoint;
